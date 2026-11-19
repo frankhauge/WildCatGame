@@ -6,7 +6,7 @@ from typing import Any, Protocol
 
 
 class SummaryWriter(Protocol):
-    """Writes a plain-language summary from a Prospect's pre-spud facts only."""
+    """Writes a plain-language summary from a Well Proposal's pre-spud facts only."""
 
     def write(self, facts: dict[str, Any]) -> str: ...
 

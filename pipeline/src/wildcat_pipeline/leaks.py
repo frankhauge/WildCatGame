@@ -1,6 +1,6 @@
 """Leak validator (ADR 0001): runs last and fails the build on any breach.
 
-Outside a Prospect's Reveal (in its Dossier and Hints, and in the Hint
+Outside a Well Proposal's Reveal (in its Dossier and Hints, and in the Hint
 prices), nothing may name:
 
 - the well itself: its wellbore or well name, discovery or field name;
@@ -35,7 +35,7 @@ _GEOLOGICAL_UNIT = re.compile(r"\b[\w-]+\s+(?:fm|formation|gp|group)\b", re.IGNO
 
 
 class LeakError(Exception):
-    """The Prospects dataset breaks the information boundary."""
+    """The Well Proposals dataset breaks the information boundary."""
 
 
 def validate_no_leaks(dataset: dict[str, Any], snapshot: Snapshot) -> None:
@@ -46,12 +46,12 @@ def validate_no_leaks(dataset: dict[str, Any], snapshot: Snapshot) -> None:
     hint_kinds = " ".join(dataset["hint_prices"])
 
     breaches: list[str] = []
-    for prospect in dataset["prospects"]:
-        well = wellbores[wellbores["wlbWellboreName"] == prospect["reveal"]["well_name"]].iloc[0]
+    for well_proposal in dataset["well_proposals"]:
+        well = wellbores[wellbores["wlbWellboreName"] == well_proposal["reveal"]["well_name"]].iloc[0]
         forbidden = operators | _own_names(well) | _names_dated_from(well["spud"], wellbores, discoveries)
-        outside_reveal = {k: v for k, v in prospect.items() if k != "reveal"}
+        outside_reveal = {k: v for k, v in well_proposal.items() if k != "reveal"}
         for path, text in [*_strings(outside_reveal), ("hint_prices", hint_kinds)]:
-            where = f"{prospect['id']} {path}"
+            where = f"{well_proposal['id']} {path}"
             breaches += [f"{where}: names {name!r}" for name in sorted(forbidden) if _mentions(text, name)]
             breaches += [f"{where}: exact year {year!r}" for year in _YEAR.findall(text)]
 

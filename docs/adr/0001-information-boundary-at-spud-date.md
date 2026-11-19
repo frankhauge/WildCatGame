@@ -1,6 +1,6 @@
 # Information boundary at the spud date
 
-Every Prospect is a real, already-drilled wildcat well, so its Outcome is public on Sodir's FactPages and anything dated after drilling started gives it away. We decided that everything shown before the Reveal (the Dossier, Hints, plain-language summaries and Hint prices) is built only from data that existed before the well's spud date. The well's own name, the real operator and the exact year are hidden until the Reveal, and only the decade is shown.
+Every Well Proposal is a real, already-drilled wildcat well, so its Outcome is public on Sodir's FactPages and anything dated after drilling started gives it away. We decided that everything shown before the Reveal (the Dossier, Hints, plain-language summaries and Hint prices) is built only from data that existed before the well's spud date. The well's own name, the real operator and the exact year are hidden until the Reveal, and only the decade is shown.
 
 ## Consequences
 

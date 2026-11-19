@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/frankhauge/wildcatgame/pipeline/prospects.schema.json",
-  "title": "Wildcat Prospects dataset",
+  "$id": "https://github.com/frankhauge/wildcatgame/pipeline/well_proposals.schema.json",
+  "title": "Wildcat Well Proposals dataset",
   "description": "The only interface between the pipeline and the app. Reveal data must not be shown before a decision.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["dataset_version", "build_date", "source", "well_cost", "discovery_payout", "hint_prices", "prospects"],
+  "required": ["dataset_version", "build_date", "source", "well_cost", "discovery_payout", "hint_prices", "well_proposals"],
   "properties": {
     "dataset_version": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}\\.[0-9a-f]{8}$"},
     "build_date": {"type": "string", "format": "date"},
@@ -28,17 +28,17 @@
       "type": "object",
       "additionalProperties": {"type": "integer", "minimum": 0}
     },
-    "prospects": {"type": "array", "items": {"$ref": "#/$defs/prospect"}}
+    "well_proposals": {"type": "array", "items": {"$ref": "#/$defs/well_proposal"}}
   },
   "$defs": {
     "text": {"type": ["string", "null"]},
     "number": {"type": ["number", "null"]},
-    "prospect": {
+    "well_proposal": {
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "dossier", "hints", "reveal"],
       "properties": {
-        "id": {"type": "string", "pattern": "^P[0-9a-f]{12}$"},
+        "id": {"type": "string", "pattern": "^WP[0-9a-f]{12}$"},
         "dossier": {"$ref": "#/$defs/dossier"},
         "hints": {
           "description": "Content for each kind of Hint, keyed like hint_prices.",

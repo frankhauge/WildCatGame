@@ -1,4 +1,4 @@
-"""Eligibility filter: which FactPages wellbores can become Prospects."""
+"""Eligibility filter: which FactPages wellbores can become Well Proposals."""
 
 from __future__ import annotations
 

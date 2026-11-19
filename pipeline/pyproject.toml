@@ -1,7 +1,7 @@
 [project]
 name = "wildcat-pipeline"
 version = "0.1.0"
-description = "Turns a Sodir FactPages snapshot into the versioned Wildcat Prospects dataset."
+description = "Turns a Sodir FactPages snapshot into the versioned Wildcat Well Proposals dataset."
 requires-python = ">=3.12"
 dependencies = ["pandas>=2.2", "jsonschema>=4.20"]
 

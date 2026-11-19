@@ -12,11 +12,11 @@ import jsonschema
 import pytest
 
 from wildcat_pipeline import (
-    PROSPECTS_SCHEMA,
+    WELL_PROPOSALS_SCHEMA,
     ContractError,
     LeakError,
     NoSummaryWriter,
-    build_prospects,
+    build_well_proposals,
     load_snapshot,
 )
 
@@ -27,13 +27,13 @@ BUILD_DATE = date(2026, 11, 19)
 
 
 def build(writer: Any = None) -> dict[str, Any]:
-    return build_prospects(
+    return build_well_proposals(
         load_snapshot(FIXTURE), writer or NoSummaryWriter(), build_date=BUILD_DATE
     )
 
 
 def by_name(dataset: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    return {p["reveal"]["well_name"]: p for p in dataset["prospects"]}
+    return {p["reveal"]["well_name"]: p for p in dataset["well_proposals"]}
 
 
 def test_only_main_wildcat_wellbores_with_a_known_result_are_prospects() -> None:
@@ -81,9 +81,9 @@ def test_dossier_holds_position_block_water_depth_target_and_decade() -> None:
 
 
 def test_reveal_holds_name_operator_year_outcome_and_discovery() -> None:
-    prospects = by_name(build())
+    well_proposals = by_name(build())
 
-    assert prospects["34/10-1"]["reveal"] == {
+    assert well_proposals["34/10-1"]["reveal"] == {
         "well_name": "34/10-1",
         "operator": "Nordhav Petroleum AS",
         "year": 1978,
@@ -91,7 +91,7 @@ def test_reveal_holds_name_operator_year_outcome_and_discovery() -> None:
         "discovery_name": "TROLLHAUGEN",
         "field_name": "TROLLHAUGEN",
     }
-    assert prospects["2/4-3"]["reveal"] == {
+    assert well_proposals["2/4-3"]["reveal"] == {
         "well_name": "2/4-3",
         "operator": "Westshore Oil Norge",
         "year": 1971,
@@ -114,19 +114,19 @@ REVEAL_ONLY = [
 
 @pytest.mark.parametrize("secret", REVEAL_ONLY)
 def test_names_operators_and_years_appear_only_in_the_reveal(secret: str) -> None:
-    for prospect in build()["prospects"]:
-        outside_reveal = {k: v for k, v in prospect.items() if k != "reveal"}
+    for well_proposal in build()["well_proposals"]:
+        outside_reveal = {k: v for k, v in well_proposal.items() if k != "reveal"}
         assert secret.lower() not in repr(outside_reveal).lower()
 
 
 class LeakingSummaryWriter:
-    """Fake summary writer that puts `text` in the summary of every Prospect."""
+    """Fake summary writer that puts `text` in the summary of every Well Proposal."""
 
     def __init__(self, text: str) -> None:
         self.text = text
 
     def write(self, facts: dict[str, Any]) -> str:
-        return f"A prospect in block {facts['block']}. {self.text}"
+        return f"A well_proposal in block {facts['block']}. {self.text}"
 
 
 @pytest.mark.parametrize(
@@ -190,18 +190,18 @@ def test_dataset_carries_version_build_date_source_and_economics() -> None:
     assert dataset["well_cost"] == 100
     assert dataset["discovery_payout"] == 300  # three times the Well Cost
     assert dataset["hint_prices"] == {}
-    assert all(p["hints"] == {} for p in dataset["prospects"])
+    assert all(p["hints"] == {} for p in dataset["well_proposals"])
 
 
 def test_dataset_matches_the_published_contract() -> None:
     dataset = build()
 
-    jsonschema.validate(json.loads(json.dumps(dataset)), PROSPECTS_SCHEMA)
+    jsonschema.validate(json.loads(json.dumps(dataset)), WELL_PROPOSALS_SCHEMA)
 
 
-def test_prospect_ids_are_unique_and_stable_across_builds() -> None:
-    first = {p["reveal"]["well_name"]: p["id"] for p in build()["prospects"]}
-    second = {p["reveal"]["well_name"]: p["id"] for p in build()["prospects"]}
+def test_well_proposal_ids_are_unique_and_stable_across_builds() -> None:
+    first = {p["reveal"]["well_name"]: p["id"] for p in build()["well_proposals"]}
+    second = {p["reveal"]["well_name"]: p["id"] for p in build()["well_proposals"]}
 
     assert first == second
     assert len(set(first.values())) == len(first)
