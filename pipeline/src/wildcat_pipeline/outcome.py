@@ -6,7 +6,7 @@ from typing import Literal
 
 Outcome = Literal["Discovery", "Dry"]
 
-_DISCOVERY_CONTENTS = {"OIL", "GAS", "OIL/GAS", "GAS/CONDENSATE"}
+_DISCOVERY_CONTENTS = {"OIL", "GAS", "OIL/GAS", "GAS/CONDENSATE", "OIL/GAS/CONDENSATE"}
 
 
 def outcome_of(content: str) -> Outcome | None:

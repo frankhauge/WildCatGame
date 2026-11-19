@@ -34,6 +34,8 @@ def build_dossier(
         },
         "block": _block_of(str(wellbore["wlbWell"])),
         "water_depth_m": number(wellbore["wlbWaterDepth"]),
+        # Sodir records no planned target, so the target is the formation and
+        # age at total depth, as FactPages gives them.
         "target_formation": text(wellbore["wlbFormationAtTd"]),
         "target_age": text(wellbore["wlbAgeAtTd"]),
         "decade": f"{spud_date.year // 10 * 10}s",

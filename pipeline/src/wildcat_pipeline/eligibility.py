@@ -35,9 +35,6 @@ def eligible_wellbores(wellbores: pd.DataFrame) -> pd.DataFrame:
 
 
 def _is_main_wellbore(wellbore: pd.Series) -> bool:
-    # A main wellbore is named after its well. When a well has been
-    # sidetracked, Sodir gives the original wellbore the suffix "S"; the
-    # sidetracks get other suffixes (A, B, T2, R for re-entries, ...).
-    name = str(wellbore["wlbWellboreName"]).strip()
-    well = str(wellbore["wlbWell"]).strip()
-    return name in (well, f"{well} S")
+    # A main wellbore has exactly its well's name. Any suffix (S, A, B, T2,
+    # R for re-entries, ...) marks a sidetrack or re-entry.
+    return str(wellbore["wlbWellboreName"]).strip() == str(wellbore["wlbWell"]).strip()

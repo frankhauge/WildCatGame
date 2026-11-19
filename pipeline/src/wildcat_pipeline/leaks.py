@@ -6,10 +6,14 @@ prices), nothing may name:
 - the well itself: its wellbore or well name, discovery or field name;
 - any operator (the Dossier says "Operator A");
 - an exact year or date;
-- anything dated on or after the well's spud date: later wells, and
-  discoveries (with their fields) made in or after the spud year.
+- anything dated on or after the well's spud date: later wells, and later
+  discoveries with their fields.
 
-Unknown dates count as later. Names are matched as whole words, ignoring
+A discovery is dated by the spud date of the wellbore that made it: it is
+later if that wellbore was spudded on or after this well's spud date. When
+the discovery wellbore is not in the snapshot, the discovery year dates it,
+and a discovery in the spud year counts as earlier. Unknown dates count as
+later. Names are matched as whole words, ignoring
 geological units such as "Tor Formation" or "STATFJORD GP": many fields are
 named after the formation they produce from, and a formation existed long
 before the well.
@@ -37,9 +41,7 @@ class LeakError(Exception):
 def validate_no_leaks(dataset: dict[str, Any], snapshot: Snapshot) -> None:
     """Raise LeakError listing every breach found outside the Reveals."""
     wellbores = snapshot.wellbores.assign(spud=spud_dates(snapshot.wellbores))
-    discoveries = snapshot.discoveries.assign(
-        year=pd.to_numeric(snapshot.discoveries["dscDiscoveryYear"], errors="coerce")
-    )
+    discoveries = _dated_discoveries(snapshot.discoveries, wellbores)
     operators = _names(wellbores["wlbDrillingOperator"]) - {HIDDEN_OPERATOR}
     hint_kinds = " ".join(dataset["hint_prices"])
 
@@ -65,12 +67,25 @@ def _names_dated_from(
     spud: pd.Timestamp, wellbores: pd.DataFrame, discoveries: pd.DataFrame
 ) -> set[str]:
     later_wells = wellbores[wellbores["spud"].isna() | (wellbores["spud"] >= spud)]
-    later_discoveries = discoveries[discoveries["year"].isna() | (discoveries["year"] >= spud.year)]
+    by_well = discoveries["found_by_spud"] >= spud
+    by_year = discoveries["found_by_spud"].isna() & (discoveries["year"] > spud.year)
+    undated = discoveries["found_by_spud"].isna() & discoveries["year"].isna()
+    later_discoveries = discoveries[by_well | by_year | undated]
     return (
         _names(later_wells["wlbWellboreName"])
         | _names(later_wells["wlbWell"])
         | _names(later_discoveries["dscName"])
         | _names(later_discoveries["fldName"])
+    )
+
+
+def _dated_discoveries(discoveries: pd.DataFrame, wellbores: pd.DataFrame) -> pd.DataFrame:
+    """Discoveries with their year and the spud date of their discovery wellbore."""
+    spud_by_name = wellbores.set_index("wlbWellboreName")["spud"]
+    spud_by_name = spud_by_name[~spud_by_name.index.duplicated()]
+    return discoveries.assign(
+        year=pd.to_numeric(discoveries["dscDiscoveryYear"], errors="coerce"),
+        found_by_spud=discoveries["wlbName"].str.strip().map(spud_by_name),
     )
 
 
