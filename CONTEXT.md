@@ -20,7 +20,7 @@ _Avoid_: Game, round, session, level
 Prospects in a Campaign are drawn at random from all eligible wildcat wells, regardless of era or region.
 
 **Exploration Budget**:
-The funds a player has at the start of a **Campaign**: five **Well Costs**, so at most five **Dry** Drills in a row. Each **Drill** and **Hint** costs money from it.
+The funds a player has at the start of a **Campaign**: five **Well Costs**, so at most five **Dry** Drills in a row, fewer if **Hints** are bought. Each **Drill** and **Hint** costs money from it.
 _Avoid_: Money, wallet, coins
 
 **Drill**:
@@ -68,7 +68,7 @@ A self-contained log entry for one decision on one **Prospect**: what the **Play
 _Avoid_: Answer, event, log
 
 **Confidence**:
-The **Player**'s own estimate of how likely a **Prospect** is to be a **Discovery**, set before deciding. It starts at 50%. The game never suggests a value.
+The **Player**'s own estimate of how likely a **Prospect** is to be a **Discovery**, set before every decision. It starts at 50%, and the Player must touch it before they can Drill or Drop; leaving it at 50% is a valid answer. The game never suggests a value.
 
 **Training Consent**:
 A **Player**'s explicit, informed permission for their **Decision Records** to be used to train the AI consultant. It is separate from storing gameplay.
