@@ -80,7 +80,7 @@ def test_dossier_holds_position_block_water_depth_target_and_decade() -> None:
     }
 
 
-def test_reveal_holds_name_operator_year_outcome_and_discovery() -> None:
+def test_reveal_holds_name_operator_year_outcome_discovery_and_hydrocarbon_levels() -> None:
     well_proposals = by_name(build())
 
     assert well_proposals["34/10-1"]["reveal"] == {
@@ -90,6 +90,10 @@ def test_reveal_holds_name_operator_year_outcome_and_discovery() -> None:
         "outcome": "Discovery",
         "discovery_name": "TROLLHAUGEN",
         "field_name": "TROLLHAUGEN",
+        "hydrocarbon_levels": [
+            {"formation": "BRENT GP", "age": "MIDDLE JURASSIC"},
+            {"formation": "STATFJORD GP", "age": "EARLY JURASSIC"},
+        ],
     }
     assert well_proposals["2/4-3"]["reveal"] == {
         "well_name": "2/4-3",
@@ -98,6 +102,7 @@ def test_reveal_holds_name_operator_year_outcome_and_discovery() -> None:
         "outcome": "Dry",
         "discovery_name": None,
         "field_name": None,
+        "hydrocarbon_levels": [],
     }
 
 

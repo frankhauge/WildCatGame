@@ -4,7 +4,7 @@
 
 | Wellbore | Case |
 |---|---|
-| 34/10-1 | Discovery (oil); its discovery and field TROLLHAUGEN are dated after the spud date |
+| 34/10-1 | Discovery (oil) with hydrocarbons at two levels, Brent and Statfjord; its discovery and field TROLLHAUGEN are dated after the spud date |
 | 2/4-3 | Dry well |
 | 25/7-1 | Well with only shows (counts as Dry) |
 | 34/10-2 | Appraisal well (not eligible) |

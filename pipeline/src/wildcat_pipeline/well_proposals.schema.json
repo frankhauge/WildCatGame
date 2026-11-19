@@ -75,14 +75,25 @@
     "reveal": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["well_name", "operator", "year", "outcome", "discovery_name", "field_name"],
+      "required": ["well_name", "operator", "year", "outcome", "discovery_name", "field_name", "hydrocarbon_levels"],
       "properties": {
         "well_name": {"type": "string"},
         "operator": {"$ref": "#/$defs/text"},
         "year": {"type": "integer"},
         "outcome": {"enum": ["Discovery", "Dry"]},
         "discovery_name": {"$ref": "#/$defs/text"},
-        "field_name": {"$ref": "#/$defs/text"}
+        "field_name": {"$ref": "#/$defs/text"},
+        "hydrocarbon_levels": {
+          "description": "Levels where hydrocarbons were found, in the order Sodir lists them.",
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["formation", "age"],
+            "properties": {"formation": {"$ref": "#/$defs/text"}, "age": {"$ref": "#/$defs/text"}}
+          }
+        }
       }
     }
   }
