@@ -32,19 +32,23 @@ def load_snapshot(directory: Path | str) -> Snapshot:
     )
 
 
+def spud_dates(wellbores: pd.DataFrame) -> pd.Series:
+    """Each wellbore's spud date (Sodir's entry date), NaT where unknown.
+
+    The spud date is the information boundary of ADR 0001.
+    """
+    return pd.to_datetime(wellbores["wlbEntryDate"].map(_parse_date))
+
+
+def _parse_date(text: str) -> pd.Timestamp | None:
+    # FactPages exports have used both ISO dates and Norwegian dd.mm.yyyy.
+    text = text.strip()
+    fmt = "%d.%m.%Y" if "." in text else "%Y-%m-%d"
+    parsed = pd.to_datetime(text, format=fmt, errors="coerce")
+    return None if pd.isna(parsed) else parsed
+
+
 def _read_csv(path: Path) -> pd.DataFrame:
     # Read everything as text: Sodir codes such as licence "050" must keep
     # their leading zeros, and empty cells become "".
     return pd.read_csv(path, dtype=str, keep_default_na=False)
-
-
-def spud_date_of(wellbore: pd.Series) -> pd.Timestamp:
-    """The date drilling started (Sodir's entry date), the information boundary."""
-    return _parse_date(str(wellbore["wlbEntryDate"]))
-
-
-def _parse_date(text: str) -> pd.Timestamp:
-    # FactPages exports have used both ISO dates and Norwegian dd.mm.yyyy.
-    text = text.strip()
-    fmt = "%d.%m.%Y" if "." in text else "%Y-%m-%d"
-    return pd.to_datetime(text, format=fmt)

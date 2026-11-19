@@ -1,26 +1,33 @@
 """Leak validator (ADR 0001): runs last and fails the build on any breach.
 
-Outside a Prospect's Reveal, nothing may name:
+Outside a Prospect's Reveal (in its Dossier and Hints, and in the Hint
+prices), nothing may name:
 
 - the well itself: its wellbore or well name, discovery or field name;
 - any operator (the Dossier says "Operator A");
 - an exact year or date;
 - anything dated on or after the well's spud date: later wells, and
-  discoveries or fields made in or after the spud year.
+  discoveries (with their fields) made in or after the spud year.
+
+Unknown dates count as later. Names are matched as whole words, ignoring
+geological units such as "Tor Formation" or "STATFJORD GP": many fields are
+named after the formation they produce from, and a formation existed long
+before the well.
 """
 
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from typing import Any
 
 import pandas as pd
 
 from .dossier import HIDDEN_OPERATOR
-from .snapshot import Snapshot, spud_date_of
+from .snapshot import Snapshot, spud_dates
 
 _YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
+_GEOLOGICAL_UNIT = re.compile(r"\b[\w-]+\s+(?:fm|formation|gp|group)\b", re.IGNORECASE)
 
 
 class LeakError(Exception):
@@ -29,18 +36,21 @@ class LeakError(Exception):
 
 def validate_no_leaks(dataset: dict[str, Any], snapshot: Snapshot) -> None:
     """Raise LeakError listing every breach found outside the Reveals."""
-    wellbores = snapshot.wellbores.assign(
-        _spud=snapshot.wellbores.apply(spud_date_of, axis=1)
-    ).set_index("wlbWellboreName", drop=False)
+    wellbores = snapshot.wellbores.assign(spud=spud_dates(snapshot.wellbores))
+    discoveries = snapshot.discoveries.assign(
+        year=pd.to_numeric(snapshot.discoveries["dscDiscoveryYear"], errors="coerce")
+    )
     operators = _names(wellbores["wlbDrillingOperator"]) - {HIDDEN_OPERATOR}
+    hint_kinds = " ".join(dataset["hint_prices"])
 
     breaches: list[str] = []
     for prospect in dataset["prospects"]:
-        well = wellbores.loc[prospect["reveal"]["well_name"]]
-        forbidden = operators | _own_names(well) | _names_dated_from(well["_spud"], wellbores, snapshot)
-        for path, text in _strings({k: v for k, v in prospect.items() if k != "reveal"}):
+        well = wellbores[wellbores["wlbWellboreName"] == prospect["reveal"]["well_name"]].iloc[0]
+        forbidden = operators | _own_names(well) | _names_dated_from(well["spud"], wellbores, discoveries)
+        outside_reveal = {k: v for k, v in prospect.items() if k != "reveal"}
+        for path, text in [*_strings(outside_reveal), ("hint_prices", hint_kinds)]:
             where = f"{prospect['id']} {path}"
-            breaches += [f"{where}: names {term!r}" for term in sorted(forbidden) if term.lower() in text.lower()]
+            breaches += [f"{where}: names {name!r}" for name in sorted(forbidden) if _mentions(text, name)]
             breaches += [f"{where}: exact year {year!r}" for year in _YEAR.findall(text)]
 
     if breaches:
@@ -51,21 +61,27 @@ def _own_names(well: pd.Series) -> set[str]:
     return _names(well[["wlbWellboreName", "wlbWell", "wlbDiscovery", "wlbField"]])
 
 
-def _names_dated_from(spud: pd.Timestamp, wellbores: pd.DataFrame, snapshot: Snapshot) -> set[str]:
-    later_wells = wellbores[wellbores["_spud"] >= spud]
-    discoveries = snapshot.discoveries
-    later_discoveries = discoveries[discoveries["dscDiscoveryYear"].astype(int) >= spud.year]
+def _names_dated_from(
+    spud: pd.Timestamp, wellbores: pd.DataFrame, discoveries: pd.DataFrame
+) -> set[str]:
+    later_wells = wellbores[wellbores["spud"].isna() | (wellbores["spud"] >= spud)]
+    later_discoveries = discoveries[discoveries["year"].isna() | (discoveries["year"] >= spud.year)]
     return (
         _names(later_wells["wlbWellboreName"])
         | _names(later_wells["wlbWell"])
-        | _names(later_wells["wlbDiscovery"])
-        | _names(later_wells["wlbField"])
         | _names(later_discoveries["dscName"])
         | _names(later_discoveries["fldName"])
     )
 
 
-def _names(values: pd.Series) -> set[str]:
+def _mentions(text: str, name: str) -> bool:
+    # Whole words only, so "2/4-3" is not found inside "12/4-31" and "TOR"
+    # not inside "Operator".
+    prose = _GEOLOGICAL_UNIT.sub(" ", text)
+    return re.search(rf"(?<![\w/-]){re.escape(name)}(?![\w/-])", prose, re.IGNORECASE) is not None
+
+
+def _names(values: Iterable[object]) -> set[str]:
     return {str(v).strip() for v in values if str(v).strip()}
 
 

@@ -15,6 +15,7 @@ from wildcat_pipeline import (
     PROSPECTS_SCHEMA,
     ContractError,
     LeakError,
+    NoSummaryWriter,
     build_prospects,
     load_snapshot,
 )
@@ -22,19 +23,12 @@ from wildcat_pipeline import (
 FIXTURE = Path(__file__).parent / "fixtures" / "snapshot"
 
 
-class SilentSummaryWriter:
-    """Fake summary writer that writes nothing."""
-
-    def write(self, facts: dict[str, Any]) -> str:
-        return ""
-
-
 BUILD_DATE = date(2026, 11, 19)
 
 
 def build(writer: Any = None) -> dict[str, Any]:
     return build_prospects(
-        load_snapshot(FIXTURE), writer or SilentSummaryWriter(), build_date=BUILD_DATE
+        load_snapshot(FIXTURE), writer or NoSummaryWriter(), build_date=BUILD_DATE
     )
 
 
@@ -71,7 +65,8 @@ def test_dossier_holds_position_block_water_depth_target_and_decade() -> None:
         "map_position": {"lat": 61.2051, "lon": 2.1953},
         "block": "34/10",
         "water_depth_m": 135.0,
-        "target": {"formation": "STATFJORD GP", "age": "EARLY JURASSIC"},
+        "target_formation": "STATFJORD GP",
+        "target_age": "EARLY JURASSIC",
         "decade": "1970s",
         "geologist_view": {
             "wlbMainArea": "NORTH SEA",
@@ -228,3 +223,10 @@ class BrokenSummaryWriter:
 def test_build_fails_when_the_output_breaks_the_contract() -> None:
     with pytest.raises(ContractError):
         build(BrokenSummaryWriter())
+
+
+def test_a_formation_sharing_its_name_with_a_later_field_is_not_a_leak() -> None:
+    # 2/4-3 (1971) targets the TOR FM; the TOR field was only found in 1990.
+    dataset = build(DecadeSummaryWriter("1970s", "The target is the Tor Formation chalk."))
+
+    assert by_name(dataset)["2/4-3"]["dossier"]["target_formation"] == "TOR FM"

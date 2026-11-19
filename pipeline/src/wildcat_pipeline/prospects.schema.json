@@ -50,7 +50,7 @@
     "dossier": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["summary", "operator", "map_position", "block", "water_depth_m", "target", "decade", "geologist_view"],
+      "required": ["summary", "operator", "map_position", "block", "water_depth_m", "target_formation", "target_age", "decade", "geologist_view"],
       "properties": {
         "summary": {"type": "string"},
         "operator": {"const": "Operator A"},
@@ -62,12 +62,8 @@
         },
         "block": {"type": "string"},
         "water_depth_m": {"$ref": "#/$defs/number"},
-        "target": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["formation", "age"],
-          "properties": {"formation": {"$ref": "#/$defs/text"}, "age": {"$ref": "#/$defs/text"}}
-        },
+        "target_formation": {"$ref": "#/$defs/text"},
+        "target_age": {"$ref": "#/$defs/text"},
         "decade": {"type": "string", "pattern": "^\\d{3}0s$"},
         "geologist_view": {
           "description": "Raw Sodir fields behind the Dossier, keyed by FactPages column name.",

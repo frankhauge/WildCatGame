@@ -15,10 +15,10 @@ from .dossier import build_dossier
 from .eligibility import eligible_wellbores
 from .leaks import validate_no_leaks
 from .reveal import build_reveal
-from .snapshot import Snapshot, spud_date_of
+from .snapshot import Snapshot, spud_dates
 from .summary import SummaryWriter
 
-log = logging.getLogger("wildcat_pipeline")
+log = logging.getLogger(__package__)
 
 WELL_COST = 100
 DISCOVERY_PAYOUT = 3 * WELL_COST
@@ -48,14 +48,14 @@ def build_prospects(
     """
     build_date = build_date or date.today()
     prospects = []
-    for _, row in eligible_wellbores(snapshot.wellbores).iterrows():
-        spud_date = spud_date_of(row)
+    wells = eligible_wellbores(snapshot.wellbores)
+    for (_, wellbore), spud_date in zip(wells.iterrows(), spud_dates(wells), strict=True):
         prospects.append(
             {
-                "id": prospect_id(row),
-                "dossier": build_dossier(row, spud_date, summary_writer),
+                "id": prospect_id(wellbore),
+                "dossier": build_dossier(wellbore, spud_date, summary_writer),
                 "hints": {},
-                "reveal": build_reveal(row, spud_date),
+                "reveal": build_reveal(wellbore, spud_date),
             }
         )
     _log_success_rate(prospects)

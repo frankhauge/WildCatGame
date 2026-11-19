@@ -14,3 +14,5 @@
 | 6/3-1 | Result not known (not eligible) |
 
 `discovery.csv` holds data dated after the spud dates (discovery years, production status) that must never appear outside a Prospect's Reveal.
+
+The discovery and field TOR, found in 1990, shares its name with the Tor Formation that 2/4-3 targets. Naming a formation is not a leak.

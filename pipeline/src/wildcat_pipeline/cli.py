@@ -7,7 +7,7 @@ import json
 import logging
 from pathlib import Path
 
-from .build import build_prospects
+from .build import build_prospects, log
 from .snapshot import load_snapshot
 from .summary import NoSummaryWriter
 
@@ -21,7 +21,7 @@ def main(argv: list[str] | None = None) -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     dataset = build_prospects(load_snapshot(args.snapshot), NoSummaryWriter())
     args.output.write_text(json.dumps(dataset, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    logging.getLogger("wildcat_pipeline").info(
+    log.info(
         "Wrote %d Prospects, version %s, to %s",
         len(dataset["prospects"]),
         dataset["dataset_version"],
