@@ -17,6 +17,8 @@ _Avoid_: Card, well, target, lead
 One playthrough: a sequence of **Prospects** played against a fixed **Exploration Budget**.
 _Avoid_: Game, round, session, level
 
+Prospects in a Campaign are drawn at random from all eligible wildcat wells, regardless of era or region.
+
 **Exploration Budget**:
 The funds a player has at the start of a **Campaign**. Each **Drill** costs money from it.
 _Avoid_: Money, wallet, coins
@@ -27,6 +29,17 @@ The player's decision to spend budget to test a **Prospect**.
 **Drop**:
 The player's decision to pass on a **Prospect** without spending budget.
 _Avoid_: Skip, pass, relinquish
+
+**Dossier**:
+Everything the player sees about a **Prospect** before deciding, built only from data that existed before the well's spud date.
+_Avoid_: Brief, info, card details
+
+**Geologist View**:
+The expanded layer of a **Dossier** that shows the raw Sodir fields behind the plain-language summary.
+_Avoid_: Expert mode, advanced mode
+
+**Outcome**:
+Either **Discovery** or **Dry**, taken from Sodir's record of the well. A well with only shows counts as **Dry**.
 
 **Reveal**:
 The moment after a decision when the real well, its operator, year and outcome are shown.
