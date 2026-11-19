@@ -1,0 +1,31 @@
+[project]
+name = "wildcat-pipeline"
+version = "0.1.0"
+description = "Turns a Sodir FactPages snapshot into the versioned Wildcat Prospects dataset."
+requires-python = ">=3.12"
+dependencies = ["pandas>=2.2", "jsonschema>=4.20"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "mypy>=1.10", "pandas-stubs", "types-jsonschema"]
+
+[project.scripts]
+wildcat-pipeline = "wildcat_pipeline.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+wildcat_pipeline = ["*.schema.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.mypy]
+strict = true
+mypy_path = "src"
+packages = ["wildcat_pipeline", "tests"]

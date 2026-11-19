@@ -1,2 +1,9 @@
 # Agent skills are installed locally, never committed
 .claude/skills/
+
+# Python
+__pycache__/
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.venv/

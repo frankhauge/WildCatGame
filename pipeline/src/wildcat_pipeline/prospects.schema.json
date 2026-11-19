@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankhauge/wildcatgame/pipeline/prospects.schema.json",
+  "title": "Wildcat Prospects dataset",
+  "description": "The only interface between the pipeline and the app. Reveal data must not be shown before a decision.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["dataset_version", "build_date", "source", "well_cost", "discovery_payout", "hint_prices", "prospects"],
+  "properties": {
+    "dataset_version": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}\\.[0-9a-f]{8}$"},
+    "build_date": {"type": "string", "format": "date"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "url", "licence", "licence_url", "attribution"],
+      "properties": {
+        "name": {"type": "string"},
+        "url": {"type": "string"},
+        "licence": {"const": "NLOD"},
+        "licence_url": {"type": "string"},
+        "attribution": {"type": "string"}
+      }
+    },
+    "well_cost": {"type": "integer", "exclusiveMinimum": 0},
+    "discovery_payout": {"type": "integer", "exclusiveMinimum": 0},
+    "hint_prices": {
+      "description": "Price of each kind of Hint, paid from the Exploration Budget.",
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "prospects": {"type": "array", "items": {"$ref": "#/$defs/prospect"}}
+  },
+  "$defs": {
+    "text": {"type": ["string", "null"]},
+    "number": {"type": ["number", "null"]},
+    "prospect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "dossier", "hints", "reveal"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^P[0-9a-f]{12}$"},
+        "dossier": {"$ref": "#/$defs/dossier"},
+        "hints": {
+          "description": "Content for each kind of Hint, keyed like hint_prices.",
+          "type": "object"
+        },
+        "reveal": {"$ref": "#/$defs/reveal"}
+      }
+    },
+    "dossier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "operator", "map_position", "block", "water_depth_m", "target", "decade", "geologist_view"],
+      "properties": {
+        "summary": {"type": "string"},
+        "operator": {"const": "Operator A"},
+        "map_position": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lat", "lon"],
+          "properties": {"lat": {"$ref": "#/$defs/number"}, "lon": {"$ref": "#/$defs/number"}}
+        },
+        "block": {"type": "string"},
+        "water_depth_m": {"$ref": "#/$defs/number"},
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["formation", "age"],
+          "properties": {"formation": {"$ref": "#/$defs/text"}, "age": {"$ref": "#/$defs/text"}}
+        },
+        "decade": {"type": "string", "pattern": "^\\d{3}0s$"},
+        "geologist_view": {
+          "description": "Raw Sodir fields behind the Dossier, keyed by FactPages column name.",
+          "type": "object",
+          "additionalProperties": {"type": ["string", "number", "null"]}
+        }
+      }
+    },
+    "reveal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["well_name", "operator", "year", "outcome", "discovery_name", "field_name"],
+      "properties": {
+        "well_name": {"type": "string"},
+        "operator": {"$ref": "#/$defs/text"},
+        "year": {"type": "integer"},
+        "outcome": {"enum": ["Discovery", "Dry"]},
+        "discovery_name": {"$ref": "#/$defs/text"},
+        "field_name": {"$ref": "#/$defs/text"}
+      }
+    }
+  }
+}
