@@ -41,8 +41,37 @@ _Avoid_: Expert mode, advanced mode
 **Outcome**:
 Either **Discovery** or **Dry**, taken from Sodir's record of the well. A well with only shows counts as **Dry**.
 
+**Hint**:
+A purchasable piece of extra **Dossier** information, built only from data from before the spud date. Each kind of Hint has its own price, paid from the **Exploration Budget**.
+_Avoid_: Clue, tip, power-up
+
+**Well Cost**:
+The fixed amount a **Drill** takes from the **Exploration Budget**.
+
+**Discovery Payout**:
+The fixed amount a **Drill** returns when the **Outcome** is **Discovery**: three times the **Well Cost**.
+
 **Reveal**:
-The moment after a decision when the real well, its operator, year and outcome are shown.
+The moment after a decision when the real well, its operator, year and outcome are shown. After a **Drop**, the Reveal shows what a Drill would have earned or lost.
+
+### The player and their data
+
+**Player**:
+Anyone playing, identified by an anonymous ID that can later be linked to a signed-in account.
+_Avoid_: User, account, customer
+
+**Player Profile**:
+A **Player**'s self-reported discipline (geologist, geophysicist, reservoir engineer, production engineer, or other) and experience level.
+
+**Decision Record**:
+A self-contained log entry for one decision on one **Prospect**: what the **Player** saw, which **Hints** they bought, their **Confidence**, their choice and the **Outcome**.
+_Avoid_: Answer, event, log
+
+**Confidence**:
+The **Player**'s optional estimate of how likely a **Prospect** is to be a **Discovery**, given before deciding.
+
+**Training Consent**:
+A **Player**'s explicit, informed permission for their **Decision Records** to be used to train the AI consultant. It is separate from storing gameplay.
 
 ### Source domain (Sodir)
 
