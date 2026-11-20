@@ -13,6 +13,7 @@ import tempfile
 import urllib.request
 import zipfile
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -24,20 +25,29 @@ _TABLE_URL = (
     "&CultureCode=en&rs:Format=CSV&Top100=false"
 )
 
-# FactPages tables saved as <table>.csv. The pipeline reads some of them now;
-# the rest are for the Hints and the map.
-TABLES = [
-    "wellbore_exploration_all",  # wellbores
-    "discovery",
-    "field",
-    "licence",
-    "survey",  # seismic surveys
-]
 
-# Spatial data, published as zipped CSV with WKT geometry: file -> URL.
-ZIPPED_CSV = {
-    "blkArea.csv": "https://factpages.sodir.no/downloads/csv/blkArea.zip",  # block outlines
-}
+@dataclass(frozen=True)
+class Source:
+    """One file of a snapshot and where FactPages publishes it."""
+
+    file: str
+    url: str
+    zipped: bool = False  # spatial data comes as a zipped CSV with WKT geometry
+
+
+def _table(name: str) -> Source:
+    return Source(f"{name}.csv", _TABLE_URL.format(table=name))
+
+
+# The build reads the first two so far; the rest are for the Hints and the map.
+SOURCES = [
+    _table("wellbore_exploration_all"),  # wellbores
+    _table("discovery"),
+    _table("field"),
+    _table("licence"),
+    _table("survey"),  # seismic surveys
+    Source("blkArea.csv", "https://factpages.sodir.no/downloads/csv/blkArea.zip", zipped=True),  # block outlines
+]
 
 MANIFEST_FILE = "snapshot.json"
 
@@ -62,15 +72,13 @@ def download_snapshot(directory: Path | str, fetch: Fetch | None = None) -> None
     partial = Path(tempfile.mkdtemp(prefix=f".{directory.name}.", dir=directory.parent))
     partial.chmod(0o755)  # mkdtemp makes it private to the user
     try:
-        sources: dict[str, str] = {}
-        for table in TABLES:
-            url = _TABLE_URL.format(table=table)
-            _write_csv(partial / f"{table}.csv", fetch(url), url)
-            sources[f"{table}.csv"] = url
-        for file, url in ZIPPED_CSV.items():
-            _write_csv(partial / file, _unzip(fetch(url), file, url), url)
-            sources[file] = url
-        manifest = {"downloaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "files": sources}
+        for source in SOURCES:
+            content = fetch(source.url)
+            _save_checked_csv(partial, source, _unzip(content, source) if source.zipped else content)
+        manifest = {
+            "downloaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "files": {source.file: source.url for source in SOURCES},
+        }
         (partial / MANIFEST_FILE).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         partial.rename(directory)
     except BaseException:
@@ -86,17 +94,17 @@ def fetch_url(url: str) -> bytes:
         return body
 
 
-def _write_csv(path: Path, content: bytes, url: str) -> None:
+def _save_checked_csv(directory: Path, source: Source, content: bytes) -> None:
     # FactPages reports errors as an HTML page, sometimes with status 200.
     header = content.removeprefix(b"\xef\xbb\xbf").split(b"\n", 1)[0]
     if header.lstrip().startswith(b"<") or b"," not in header:
-        raise DownloadError(f"{path.name}: {url} did not return a CSV table")
-    path.write_bytes(content)
+        raise DownloadError(f"{source.file}: {source.url} did not return a CSV table")
+    (directory / source.file).write_bytes(content)
 
 
-def _unzip(archive: bytes, file: str, url: str) -> bytes:
+def _unzip(archive: bytes, source: Source) -> bytes:
     try:
         with zipfile.ZipFile(io.BytesIO(archive)) as opened:
-            return opened.read(file)
+            return opened.read(source.file)
     except (zipfile.BadZipFile, KeyError) as error:
-        raise DownloadError(f"{file}: {url} did not return a zip holding {file}") from error
+        raise DownloadError(f"{source.file}: {source.url} did not return a zip holding {source.file}") from error

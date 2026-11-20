@@ -32,6 +32,7 @@ from .dossier import HIDDEN_OPERATOR
 from .snapshot import Snapshot, spud_dates
 
 _YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
+# app/e2e/smoke.test.mjs repeats this rule; keep the two in step.
 _GEOLOGICAL_UNIT = re.compile(r"\b[\w-]+\s+(?:fm|formation|gp|group)\b", re.IGNORECASE)
 
 

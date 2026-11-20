@@ -26,7 +26,7 @@ Run these by hand from `pipeline/` whenever new wells should come into the game.
    python -m wildcat_pipeline download snapshots/$(date +%F)
    ```
 
-   This saves the tables the game uses: wellbores, discoveries, fields, licences, seismic surveys (`survey.csv`) and block outlines (`blkArea.csv`, WKT polygons). `snapshot.json` records when and from which URL each file came. It takes under a minute. A snapshot is never overwritten, and a failed download leaves nothing behind. `snapshots/` is not committed.
+   This saves the tables the game is built from (the build reads only the first two so far; the rest are for the Hints and the map): wellbores, discoveries, fields, licences, seismic surveys (`survey.csv`) and block outlines (`blkArea.csv`, WKT polygons). `snapshot.json` records when and from which URL each file came. It takes a minute or two. A snapshot is never overwritten, and a failed download leaves nothing behind. `snapshots/` is not committed.
 
 2. Build the dataset the app ships:
 
@@ -36,7 +36,7 @@ Run these by hand from `pipeline/` whenever new wells should come into the game.
 
    Compare the logged success rate with the game balance: a payout of three times the Well Cost roughly breaks even for blind drilling at a 30–40% success rate. If the rate drifts far from that, the budget and payout need retuning. The build stops with `LeakError` or `ContractError` rather than write a dataset that breaks the rules above.
 
-3. Run the app's tests (`npm test` and `npm run test:smoke` in `app/`), then commit `app/public/well_proposals.json`. Its `dataset_version` (build date plus a content hash) is what Decision Records name, so the same content always gets the same version.
+3. Run the app's tests (`npm test` and `npm run test:smoke` in `app/`), then commit `app/public/well_proposals.json`. Its `dataset_version` (build date plus a hash of the content) is what Decision Records name: it changes whenever the content changes, so every refresh gives a new version.
 
 ## Test
 
@@ -48,4 +48,4 @@ python -m pytest
 mypy
 ```
 
-Tests go only through the top-level function, `build_well_proposals`, using the hand-made fixture in `tests/fixtures/`.
+Tests go only through the two top-level functions: `build_well_proposals`, using the hand-made fixture in `tests/fixtures/`, and `download_snapshot`, with a fake fetch instead of the network.
