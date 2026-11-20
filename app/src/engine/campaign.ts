@@ -24,6 +24,8 @@ export interface CurrentWellProposal {
   dossier: Dossier;
   confidence: number;
   confidenceSet: boolean;
+  /** When it was shown, by the clock, for the time taken to decide. */
+  shownAt: number;
 }
 
 export interface RevealView extends Reveal {
@@ -89,9 +91,6 @@ export interface CampaignEngine {
 export function createCampaignEngine(dataset: Dataset, options: CampaignOptions): CampaignEngine {
   const drawn = draw(dataset.well_proposals, Math.min(CAMPAIGN_LENGTH, dataset.well_proposals.length), options.seed);
   const wellCost = dataset.well_cost;
-  // When the current Well Proposal was shown, for the time taken. Kept out of
-  // the state so the state stays plain data for the UI.
-  let shownAt = options.clock();
 
   // The Well Proposal being decided: the first one not yet decided.
   function proposalAt(state: CommonState): WellProposal {
@@ -100,11 +99,16 @@ export function createCampaignEngine(dataset: Dataset, options: CampaignOptions)
 
   function deciding(common: CommonState): CampaignState {
     const proposal = proposalAt(common);
-    shownAt = options.clock();
     return {
       ...common,
       phase: "deciding",
-      current: { id: proposal.id, dossier: proposal.dossier, confidence: STARTING_CONFIDENCE, confidenceSet: false },
+      current: {
+        id: proposal.id,
+        dossier: proposal.dossier,
+        confidence: STARTING_CONFIDENCE,
+        confidenceSet: false,
+        shownAt: options.clock(),
+      },
     };
   }
 
@@ -137,7 +141,7 @@ export function createCampaignEngine(dataset: Dataset, options: CampaignOptions)
       datasetVersion: dataset.dataset_version,
       hintsBought: [],
       sectionsOpened: [],
-      timeTakenMs: options.clock() - shownAt,
+      timeTakenMs: options.clock() - current.shownAt,
       confidence: current.confidence,
       decision,
       outcome: reveal.outcome,

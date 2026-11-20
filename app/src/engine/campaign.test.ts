@@ -61,10 +61,16 @@ function play(data: Dataset, actions: Action[], seed = 7) {
   return { engine, steps, state: steps.at(-1)!.state, last: steps.at(-1)! };
 }
 
+const decide = (type: "drill" | "drop"): Action[] => [
+  { type: "setConfidence", value: 50 },
+  { type },
+  { type: "continue" },
+];
+
 function drawnIds(data: Dataset, seed: number): string[] {
   const ids: string[] = [];
-  const { engine } = play(data, [], seed);
-  let state: CampaignState = engine.start().state;
+  const { engine, state: start } = play(data, [], seed);
+  let state: CampaignState = start;
   while (state.phase !== "ended") {
     if (state.phase === "deciding") {
       ids.push(state.current.id);
@@ -172,12 +178,7 @@ describe("Campaign engine", () => {
   });
 
   it("ends after 10 Well Proposals with the final result", () => {
-    const decideAll: Action[] = Array(10).fill([
-      { type: "setConfidence", value: 50 },
-      { type: "drop" },
-      { type: "continue" },
-    ]).flat();
-    const { state, steps } = play(mixed, decideAll);
+    const { state, steps } = play(mixed, Array(10).fill(decide("drop")).flat());
     expect(state).toMatchObject({ phase: "ended", wellProposalsLeft: 0, netBudget: 0, budget: 500 });
     const records = steps.flatMap((s) => s.decisionRecords);
     expect(records).toHaveLength(10);
@@ -185,13 +186,8 @@ describe("Campaign engine", () => {
   });
 
   it("counts Discoveries, Dry wells drilled, Dry wells avoided and Discoveries missed", () => {
-    const decide = (type: "drill" | "drop"): Action[] => [
-      { type: "setConfidence", value: 50 },
-      { type },
-      { type: "continue" },
-    ];
     const data = dataset(["Discovery", "Dry", "Discovery", "Dry", "Discovery", "Dry", "Discovery", "Dry", "Discovery", "Dry"]);
-    const { state, steps } = play(data, ["drill", "drop", "drill", "drop", "drill", "drop", "drill", "drop", "drill", "drop"].flatMap((t) => decide(t as "drill" | "drop")));
+    const { state, steps } = play(data, (["drill", "drop", "drill", "drop", "drill", "drop", "drill", "drop", "drill", "drop"] as const).flatMap(decide));
     const records = steps.flatMap((s) => s.decisionRecords);
     const count = (decision: string, outcome: string) =>
       records.filter((r) => r.decision === decision && r.outcome === outcome).length;
@@ -206,14 +202,12 @@ describe("Campaign engine", () => {
   });
 
   it("ends after five Dry Drills in a row", () => {
-    const drillDry: Action[] = [{ type: "setConfidence", value: 50 }, { type: "drill" }, { type: "continue" }];
-    const { state } = play(dataset(Array(12).fill("Dry")), Array(5).fill(drillDry).flat());
+    const { state } = play(dataset(Array(12).fill("Dry")), Array(5).fill(decide("drill")).flat());
     expect(state).toMatchObject({ phase: "ended", budget: 0, netBudget: -500, wellProposalsLeft: 5 });
     expect(state.tally.dryWellsDrilled).toBe(5);
   });
 
   it("ends early when the budget is below the Well Cost, even after some Drops", () => {
-    const decide = (type: "drill" | "drop"): Action[] => [{ type: "setConfidence", value: 50 }, { type }, { type: "continue" }];
     const actions = [...decide("drop"), ...decide("drop"), ...Array(5).fill(decide("drill")).flat()];
     const { state, steps } = play(dataset(Array(12).fill("Dry")), actions);
     expect(state).toMatchObject({ phase: "ended", budget: 0, wellProposalsLeft: 3 });
@@ -221,15 +215,13 @@ describe("Campaign engine", () => {
   });
 
   it("tells the Reveal whether the Campaign ends after it", () => {
-    const drillDry: Action[] = [{ type: "setConfidence", value: 50 }, { type: "drill" }, { type: "continue" }];
-    const { steps } = play(dataset(Array(12).fill("Dry")), Array(5).fill(drillDry).flat());
+    const { steps } = play(dataset(Array(12).fill("Dry")), Array(5).fill(decide("drill")).flat());
     const reveals = steps.map((s) => s.state).filter((s) => s.phase === "reveal");
     expect(reveals.map((s) => s.campaignEndsAfterReveal)).toEqual([false, false, false, false, true]);
   });
 
   it("rejects actions after the Campaign has ended", () => {
-    const drillDry: Action[] = [{ type: "setConfidence", value: 50 }, { type: "drill" }, { type: "continue" }];
-    const { last } = play(dataset(Array(12).fill("Dry")), [...Array(5).fill(drillDry).flat(), { type: "setConfidence", value: 50 }, { type: "drill" }]);
+    const { last } = play(dataset(Array(12).fill("Dry")), [...Array(5).fill(decide("drill")).flat(), { type: "setConfidence", value: 50 }, { type: "drill" }]);
     expect(last.rejected).toBeDefined();
     expect(last.state.phase).toBe("ended");
   });
@@ -237,6 +229,18 @@ describe("Campaign engine", () => {
   it("plays a shorter Campaign when the dataset has fewer than 10 Well Proposals", () => {
     const { state } = play(dataset(["Dry", "Discovery", "Dry"]), []);
     expect(state.wellProposalsLeft).toBe(3);
+  });
+
+  it("gives the same Decision Record when an earlier state is acted on again", () => {
+    const clock = fakeClock();
+    const engine = createCampaignEngine(mixed, { seed: 7, clock: clock.now, campaignId: "C1" });
+    const first = engine.act(engine.start().state, { type: "setConfidence", value: 50 }).state;
+    clock.advance(1_000);
+    const record = engine.act(first, { type: "drop" }).decisionRecords[0];
+    const second = engine.start().state;
+    clock.advance(5_000);
+    engine.act(second, { type: "setConfidence", value: 50 });
+    expect(engine.act(first, { type: "drop" }).decisionRecords[0]!.timeTakenMs).toBe(record!.timeTakenMs + 5_000);
   });
 
   it("emits a Decision Record for each Drill or Drop, timed by the clock", () => {

@@ -44,9 +44,11 @@ export function RevealScreen({ state, send }: { state: RevealState; send: (actio
       </dl>
       {reveal.drillWouldHaveChanged !== null && (
         <p className="would-have" data-testid="would-have">
-          {reveal.drillWouldHaveChanged > 0
-            ? t("reveal.wouldHaveFound", { name: found ?? reveal.well_name, amount: amount(reveal.drillWouldHaveChanged) })
-            : t("reveal.wouldHaveLost", { amount: amount(-reveal.drillWouldHaveChanged) })}
+          {reveal.drillWouldHaveChanged <= 0
+            ? t("reveal.wouldHaveLost", { amount: amount(-reveal.drillWouldHaveChanged) })
+            : found
+              ? t("reveal.wouldHaveFound", { name: found, amount: amount(reveal.drillWouldHaveChanged) })
+              : t("reveal.wouldHaveDiscovered", { amount: amount(reveal.drillWouldHaveChanged) })}
         </p>
       )}
       <button type="button" className="primary" onClick={() => send({ type: "continue" })}>

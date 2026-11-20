@@ -60,17 +60,19 @@ test("plays one full Campaign without showing Reveal data before a decision", as
     const slider = page.getByTestId("confidence-slider");
     if (decisions % 2 === 0) await slider.fill("70");
     else await slider.click();
-    await (decisions % 2 === 0 ? drill : drop).click();
+    // Drill once and Drop the rest, so the budget always lasts all 10.
+    const drilling = decisions === 0;
+    await (drilling ? drill : drop).click();
     decisions++;
 
     await page.getByTestId("reveal").waitFor();
     assert.match(await page.getByTestId("budget-change").innerText(), /^[+−]?\d/);
-    if (decisions % 2 === 0) assert.equal(await page.getByTestId("would-have").count(), 1);
+    assert.equal(await page.getByTestId("would-have").count(), drilling ? 0 : 1);
     assert.ok(await credit.isVisible());
     await page.getByRole("button", { name: /Next Well Proposal|See your result/ }).click();
   }
 
-  assert.ok(decisions >= 1 && decisions <= 10, `${decisions} decisions`);
+  assert.equal(decisions, 10);
   const result = await page.getByTestId("result").innerText();
   for (const label of ["Net budget", "Discoveries", "Dry wells drilled", "Dry wells avoided", "Discoveries missed"]) {
     assert.ok(result.includes(label), `result is missing ${label}`);

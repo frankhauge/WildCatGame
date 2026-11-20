@@ -53,7 +53,7 @@ export function Deciding({ state, send }: { state: DecidingState; send: (action:
         <button
           type="button"
           className="drill"
-          disabled={!confidenceSet || state.budget < state.wellCost}
+          disabled={!confidenceSet}
           onClick={() => send({ type: "drill" })}
         >
           {t("decision.drill")} <small>{t("decision.drillCost", { amount: amount(state.wellCost) })}</small>
