@@ -1,0 +1,452 @@
+{
+  "dataset_version": "2026-11-20.dee833ac",
+  "build_date": "2026-11-20",
+  "source": {
+    "name": "Sodir FactPages",
+    "url": "https://factpages.sodir.no",
+    "licence": "NLOD",
+    "licence_url": "https://data.norge.no/nlod/en/2.0",
+    "attribution": "Contains data under the Norwegian licence for Open Government data (NLOD) distributed by Sodir."
+  },
+  "well_cost": 100,
+  "discovery_payout": 300,
+  "hint_prices": {},
+  "well_proposals": [
+    {
+      "id": "WP049b66f749b8",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 61.15,
+          "lon": 2.41
+        },
+        "block": "34/11",
+        "water_depth_m": 140.0,
+        "target_formation": "STATFJORD GP",
+        "target_age": "EARLY JURASSIC",
+        "decade": "1970s",
+        "geologist_view": {
+          "wlbMainArea": "NORTH SEA",
+          "wlbFormationAtTd": "STATFJORD GP",
+          "wlbAgeAtTd": "EARLY JURASSIC",
+          "wlbNsDecDeg": 61.15,
+          "wlbEwDecDeg": 2.41,
+          "wlbWaterDepth": 140.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "34/11-1",
+        "operator": "Nordhav Petroleum AS",
+        "year": 1977,
+        "outcome": "Discovery",
+        "discovery_name": "SKARVHEIM",
+        "field_name": "SKARVHEIM",
+        "hydrocarbon_levels": [
+          {
+            "formation": "BRENT GP",
+            "age": "MIDDLE JURASSIC"
+          },
+          {
+            "formation": "STATFJORD GP",
+            "age": "EARLY JURASSIC"
+          }
+        ]
+      }
+    },
+    {
+      "id": "WPed54bf31d0aa",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 56.6,
+          "lon": 3.4
+        },
+        "block": "2/5",
+        "water_depth_m": 68.0,
+        "target_formation": "EKOFISK FM",
+        "target_age": "PALEOCENE",
+        "decade": "1970s",
+        "geologist_view": {
+          "wlbMainArea": "NORTH SEA",
+          "wlbFormationAtTd": "EKOFISK FM",
+          "wlbAgeAtTd": "PALEOCENE",
+          "wlbNsDecDeg": 56.6,
+          "wlbEwDecDeg": 3.4,
+          "wlbWaterDepth": 68.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "2/5-4",
+        "operator": "Westshore Oil Norge",
+        "year": 1972,
+        "outcome": "Dry",
+        "discovery_name": null,
+        "field_name": null,
+        "hydrocarbon_levels": []
+      }
+    },
+    {
+      "id": "WPcfc6ddc59d20",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 59.3,
+          "lon": 2.7
+        },
+        "block": "25/8",
+        "water_depth_m": 120.0,
+        "target_formation": "HEIMDAL FM",
+        "target_age": "PALEOCENE",
+        "decade": "1980s",
+        "geologist_view": {
+          "wlbMainArea": "NORTH SEA",
+          "wlbFormationAtTd": "HEIMDAL FM",
+          "wlbAgeAtTd": "PALEOCENE",
+          "wlbNsDecDeg": 59.3,
+          "wlbEwDecDeg": 2.7,
+          "wlbWaterDepth": 120.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "25/8-2",
+        "operator": "Fjordgas ASA",
+        "year": 1984,
+        "outcome": "Dry",
+        "discovery_name": null,
+        "field_name": null,
+        "hydrocarbon_levels": []
+      }
+    },
+    {
+      "id": "WPcdd83b164668",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 58.9,
+          "lon": 2.15
+        },
+        "block": "16/1",
+        "water_depth_m": 110.0,
+        "target_formation": "SKAGERRAK FM",
+        "target_age": "TRIASSIC",
+        "decade": "1990s",
+        "geologist_view": {
+          "wlbMainArea": "NORTH SEA",
+          "wlbFormationAtTd": "SKAGERRAK FM",
+          "wlbAgeAtTd": "TRIASSIC",
+          "wlbNsDecDeg": 58.9,
+          "wlbEwDecDeg": 2.15,
+          "wlbWaterDepth": 110.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "16/1-3",
+        "operator": "Kystlys Energi AS",
+        "year": 1990,
+        "outcome": "Dry",
+        "discovery_name": null,
+        "field_name": null,
+        "hydrocarbon_levels": []
+      }
+    },
+    {
+      "id": "WP818f98bbb087",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 64.3,
+          "lon": 7.75
+        },
+        "block": "6407/9",
+        "water_depth_m": 280.0,
+        "target_formation": "GARN FM",
+        "target_age": "MIDDLE JURASSIC",
+        "decade": "1980s",
+        "geologist_view": {
+          "wlbMainArea": "NORWEGIAN SEA",
+          "wlbFormationAtTd": "GARN FM",
+          "wlbAgeAtTd": "MIDDLE JURASSIC",
+          "wlbNsDecDeg": 64.3,
+          "wlbEwDecDeg": 7.75,
+          "wlbWaterDepth": 280.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "6407/9-2",
+        "operator": "Haltenbank Energi AS",
+        "year": 1987,
+        "outcome": "Discovery",
+        "discovery_name": "MORILD",
+        "field_name": null,
+        "hydrocarbon_levels": [
+          {
+            "formation": "GARN FM",
+            "age": "MIDDLE JURASSIC"
+          }
+        ]
+      }
+    },
+    {
+      "id": "WP556de6af7068",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 66.1,
+          "lon": 8.1
+        },
+        "block": "6608/10",
+        "water_depth_m": 350.0,
+        "target_formation": "TILJE FM",
+        "target_age": "EARLY JURASSIC",
+        "decade": "1990s",
+        "geologist_view": {
+          "wlbMainArea": "NORWEGIAN SEA",
+          "wlbFormationAtTd": "TILJE FM",
+          "wlbAgeAtTd": "EARLY JURASSIC",
+          "wlbNsDecDeg": 66.1,
+          "wlbEwDecDeg": 8.1,
+          "wlbWaterDepth": 350.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "6608/10-4",
+        "operator": "Polarsokkel AS",
+        "year": 1993,
+        "outcome": "Dry",
+        "discovery_name": null,
+        "field_name": null,
+        "hydrocarbon_levels": []
+      }
+    },
+    {
+      "id": "WP56ce97757ed6",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 72.8,
+          "lon": 20.2
+        },
+        "block": "7220/4",
+        "water_depth_m": 420.0,
+        "target_formation": "KOLMULE FM",
+        "target_age": "EARLY CRETACEOUS",
+        "decade": "2000s",
+        "geologist_view": {
+          "wlbMainArea": "BARENTS SEA",
+          "wlbFormationAtTd": "KOLMULE FM",
+          "wlbAgeAtTd": "EARLY CRETACEOUS",
+          "wlbNsDecDeg": 72.8,
+          "wlbEwDecDeg": 20.2,
+          "wlbWaterDepth": 420.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "7220/4-1",
+        "operator": "Polarsokkel AS",
+        "year": 2001,
+        "outcome": "Dry",
+        "discovery_name": null,
+        "field_name": null,
+        "hydrocarbon_levels": []
+      }
+    },
+    {
+      "id": "WP7e7385e75141",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 60.9,
+          "lon": 3.6
+        },
+        "block": "31/3",
+        "water_depth_m": 320.0,
+        "target_formation": "SOGNEFJORD FM",
+        "target_age": "LATE JURASSIC",
+        "decade": "1990s",
+        "geologist_view": {
+          "wlbMainArea": "NORTH SEA",
+          "wlbFormationAtTd": "SOGNEFJORD FM",
+          "wlbAgeAtTd": "LATE JURASSIC",
+          "wlbNsDecDeg": 60.9,
+          "wlbEwDecDeg": 3.6,
+          "wlbWaterDepth": 320.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "31/3-2",
+        "operator": "Westshore Oil Norge",
+        "year": 1995,
+        "outcome": "Dry",
+        "discovery_name": null,
+        "field_name": null,
+        "hydrocarbon_levels": []
+      }
+    },
+    {
+      "id": "WPf74ab19b7e5b",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 56.2,
+          "lon": 2.9
+        },
+        "block": "1/9",
+        "water_depth_m": 72.0,
+        "target_formation": "TOR FM",
+        "target_age": "LATE CRETACEOUS",
+        "decade": "1970s",
+        "geologist_view": {
+          "wlbMainArea": "NORTH SEA",
+          "wlbFormationAtTd": "TOR FM",
+          "wlbAgeAtTd": "LATE CRETACEOUS",
+          "wlbNsDecDeg": 56.2,
+          "wlbEwDecDeg": 2.9,
+          "wlbWaterDepth": 72.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "1/9-5",
+        "operator": "Nordhav Petroleum AS",
+        "year": 1975,
+        "outcome": "Discovery",
+        "discovery_name": "VALBRANN",
+        "field_name": "VALBRANN",
+        "hydrocarbon_levels": [
+          {
+            "formation": "TOR FM",
+            "age": "LATE CRETACEOUS"
+          },
+          {
+            "formation": "EKOFISK FM",
+            "age": "PALEOCENE"
+          }
+        ]
+      }
+    },
+    {
+      "id": "WPa60e4b948e84",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 61.4,
+          "lon": 3.9
+        },
+        "block": "35/9",
+        "water_depth_m": 360.0,
+        "target_formation": "HEATHER FM",
+        "target_age": "LATE JURASSIC",
+        "decade": "2010s",
+        "geologist_view": {
+          "wlbMainArea": "NORTH SEA",
+          "wlbFormationAtTd": "HEATHER FM",
+          "wlbAgeAtTd": "LATE JURASSIC",
+          "wlbNsDecDeg": 61.4,
+          "wlbEwDecDeg": 3.9,
+          "wlbWaterDepth": 360.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "35/9-7",
+        "operator": "Fjordgas ASA",
+        "year": 2010,
+        "outcome": "Dry",
+        "discovery_name": null,
+        "field_name": null,
+        "hydrocarbon_levels": []
+      }
+    },
+    {
+      "id": "WP612c22f02232",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 65.05,
+          "lon": 6.6
+        },
+        "block": "6506/11",
+        "water_depth_m": 300.0,
+        "target_formation": "ILE FM",
+        "target_age": "MIDDLE JURASSIC",
+        "decade": "2000s",
+        "geologist_view": {
+          "wlbMainArea": "NORWEGIAN SEA",
+          "wlbFormationAtTd": "ILE FM",
+          "wlbAgeAtTd": "MIDDLE JURASSIC",
+          "wlbNsDecDeg": 65.05,
+          "wlbEwDecDeg": 6.6,
+          "wlbWaterDepth": 300.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "6506/11-8",
+        "operator": "Haltenbank Energi AS",
+        "year": 2004,
+        "outcome": "Dry",
+        "discovery_name": null,
+        "field_name": null,
+        "hydrocarbon_levels": []
+      }
+    },
+    {
+      "id": "WP9ced85299c52",
+      "dossier": {
+        "summary": "",
+        "operator": "Operator A",
+        "map_position": {
+          "lat": 59.45,
+          "lon": 1.9
+        },
+        "block": "24/9",
+        "water_depth_m": 125.0,
+        "target_formation": "HERMOD FM",
+        "target_age": "PALEOCENE",
+        "decade": "1990s",
+        "geologist_view": {
+          "wlbMainArea": "NORTH SEA",
+          "wlbFormationAtTd": "HERMOD FM",
+          "wlbAgeAtTd": "PALEOCENE",
+          "wlbNsDecDeg": 59.45,
+          "wlbEwDecDeg": 1.9,
+          "wlbWaterDepth": 125.0
+        }
+      },
+      "hints": {},
+      "reveal": {
+        "well_name": "24/9-6",
+        "operator": "Kystlys Energi AS",
+        "year": 1999,
+        "outcome": "Discovery",
+        "discovery_name": "SILDRE",
+        "field_name": null,
+        "hydrocarbon_levels": [
+          {
+            "formation": "HERMOD FM",
+            "age": "PALEOCENE"
+          }
+        ]
+      }
+    }
+  ]
+}

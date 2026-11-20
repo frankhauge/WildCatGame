@@ -7,3 +7,8 @@ __pycache__/
 .mypy_cache/
 .pytest_cache/
 .venv/
+
+# App
+node_modules/
+app/dist/
+*.tsbuildinfo

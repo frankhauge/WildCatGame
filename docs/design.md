@@ -19,8 +19,9 @@ Audience: both industry professionals and curious non-experts. One layered inter
   | Drill | +3 × Well Cost | −1 × Well Cost |
   | Drop | 0 | 0 |
 
-- A Campaign ends after 10 Well Proposals, or earlier if the budget can't pay for another Drill.
+- A Campaign ends after 10 Well Proposals, or earlier if the budget can't pay for another Drill. If the dataset holds fewer than 10 Well Proposals, the Campaign plays all of them.
 - After a Drop, the Reveal shows what a Drill would have earned or lost.
+- The final result shows the net budget, the final budget, Discoveries, Dry wells drilled, Dry wells avoided and Discoveries missed, with a button to play another Campaign.
 - **Confidence** is a slider that starts at 50%. The player must touch it before Drill or Drop become available, and 50% is an allowed answer. The game never suggests a chance of success.
 
 ## Information boundary (ADR 0001)
