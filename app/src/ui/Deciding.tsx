@@ -12,7 +12,11 @@ export function Deciding({ state, send }: { state: DecidingState; send: (action:
   return (
     <section className="card" data-testid="dossier">
       <h2>{t("dossier.heading")}</h2>
-      {dossier.summary && <p>{dossier.summary}</p>}
+      {dossier.summary && (
+        <p className="summary" data-testid="dossier-summary">
+          {dossier.summary}
+        </p>
+      )}
       <dl className="facts">
         <dt>{t("dossier.block")}</dt>
         <dd>{dossier.block}</dd>

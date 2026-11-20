@@ -54,6 +54,27 @@ after(async () => {
   await server?.close();
 });
 
+test("shows each Well Proposal's summary in its Dossier", async () => {
+  // The shipped dataset may have been built without summaries, so this test
+  // gives every Well Proposal one of its own.
+  const withSummaries = {
+    ...dataset,
+    well_proposals: dataset.well_proposals.map((p) => ({
+      ...p,
+      dossier: { ...p.dossier, summary: `A structure in block ${p.dossier.block}, drilled in the ${p.dossier.decade}.` },
+    })),
+  };
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.route("**/well_proposals.json", (route) => route.fulfill({ json: withSummaries }));
+  await page.goto(server.resolvedUrls.local[0]);
+
+  await page.getByTestId("dossier").waitFor();
+  const shown = await page.getByTestId("dossier-summary").innerText();
+  const summaries = new Set(withSummaries.well_proposals.map((p) => p.dossier.summary));
+  assert.ok(summaries.has(shown), `the Dossier shows "${shown}", which is no summary in the dataset`);
+  await page.close();
+});
+
 test("plays one full Campaign without showing Reveal data before a decision", async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto(server.resolvedUrls.local[0]);
@@ -71,6 +92,8 @@ test("plays one full Campaign without showing Reveal data before a decision", as
     const text = await page.locator("body").innerText();
     assertNotShown(neverBeforeADecision, text);
     assert.ok(!/chance|probability/i.test(text), "a chance of success is shown");
+    const summary = page.getByTestId("dossier-summary");
+    const shownSummary = (await summary.count()) ? await summary.innerText() : "";
 
     const drill = page.getByRole("button", { name: /^Drill/ });
     const drop = page.getByRole("button", { name: /^Drop/ });
@@ -91,6 +114,7 @@ test("plays one full Campaign without showing Reveal data before a decision", as
     const shown = byWellName.get(wellName);
     assert.ok(shown, `the Reveal names ${wellName}, which is not in the dataset`);
     assertNotShown(ownDiscoveryAndField(shown), withoutGeologicalUnits(text));
+    assert.equal(shownSummary, shown.dossier.summary, "the Dossier does not show its summary");
     assert.match(await page.getByTestId("budget-change").innerText(), /^[+−]?\d/);
     assert.equal(await page.getByTestId("would-have").count(), drilling ? 0 : 1);
     assert.ok(await credit.isVisible());

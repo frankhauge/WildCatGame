@@ -12,7 +12,6 @@ from typing import Any
 import pandas as pd
 
 from .cells import number, text
-from .summary import SummaryWriter
 
 HIDDEN_OPERATOR = "Operator A"
 
@@ -22,11 +21,12 @@ _GEOLOGIST_VIEW_TEXT = ["wlbMainArea", "wlbFormationAtTd", "wlbAgeAtTd"]
 _GEOLOGIST_VIEW_NUMBERS = ["wlbNsDecDeg", "wlbEwDecDeg", "wlbWaterDepth"]
 
 
-def build_dossier(
-    wellbore: pd.Series, spud_date: pd.Timestamp, summary_writer: SummaryWriter
-) -> dict[str, Any]:
-    """Build the Dossier for one eligible wellbore."""
-    facts: dict[str, Any] = {
+def dossier_facts(wellbore: pd.Series, spud_date: pd.Timestamp) -> dict[str, Any]:
+    """The Dossier of one eligible wellbore, all but its summary.
+
+    These are the only facts the summary writer is given.
+    """
+    return {
         "operator": HIDDEN_OPERATOR,
         "map_position": {
             "lat": number(wellbore["wlbNsDecDeg"]),
@@ -44,7 +44,6 @@ def build_dossier(
             **{field: number(wellbore[field]) for field in _GEOLOGIST_VIEW_NUMBERS},
         },
     }
-    return {"summary": summary_writer.write(facts), **facts}
 
 
 def _block_of(well_name: str) -> str:

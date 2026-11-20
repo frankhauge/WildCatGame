@@ -11,12 +11,12 @@ from typing import Any
 import pandas as pd
 
 from .contract import validate_contract
-from .dossier import build_dossier
+from .dossier import dossier_facts
 from .eligibility import eligible_wellbores
-from .leaks import validate_no_leaks
+from .leaks import LeakError, LeakGuard, validate_no_leaks
 from .reveal import build_reveal
 from .snapshot import Snapshot, spud_dates
-from .summary import SummaryWriter
+from .summary import MAX_ATTEMPTS, NoSummaryWriter, SummaryWriter, write_summary
 
 log = logging.getLogger(__package__)
 
@@ -44,21 +44,31 @@ def build_well_proposals(
     """Turn a FactPages snapshot into a versioned Well Proposals dataset.
 
     Raises ContractError if the output does not match the dataset contract,
-    and LeakError if it breaks the information boundary (ADR 0001).
+    and LeakError if it breaks the information boundary (ADR 0001), including
+    when a summary still leaks after every retry.
     """
     build_date = build_date or date.today()
+    guard = LeakGuard(snapshot)
     well_proposals = []
+    unresolved_leaks: list[str] = []
     wells = eligible_wellbores(snapshot.wellbores)
     for (_, wellbore), spud_date in zip(wells.iterrows(), spud_dates(wells), strict=True):
-        well_proposals.append(
-            {
-                "id": well_proposal_id(wellbore),
-                "dossier": build_dossier(wellbore, spud_date, summary_writer),
-                "hints": {},
-                "reveal": build_reveal(wellbore, spud_date),
-            }
+        wp_id = well_proposal_id(wellbore)
+        reveal = build_reveal(wellbore, spud_date)
+        facts = dossier_facts(wellbore, spud_date)
+        summary, leaks = write_summary(
+            summary_writer, facts, lambda text: guard.breaches(text, reveal["well_name"]), wp_id
         )
+        unresolved_leaks += [
+            f"{wp_id} summary still leaks after {MAX_ATTEMPTS} attempts: {leak}" for leak in leaks
+        ]
+        well_proposals.append(
+            {"id": wp_id, "dossier": {"summary": summary, **facts}, "hints": {}, "reveal": reveal}
+        )
+    if unresolved_leaks:
+        raise LeakError("Information boundary breached:\n" + "\n".join(unresolved_leaks))
     _log_success_rate(well_proposals)
+    _log_summaries(well_proposals, summary_writer)
 
     hint_prices: dict[str, int] = {}
     dataset = {
@@ -71,7 +81,7 @@ def build_well_proposals(
         "well_proposals": well_proposals,
     }
     validate_contract(dataset)
-    validate_no_leaks(dataset, snapshot)  # always last
+    validate_no_leaks(dataset, guard)  # always last
     return dataset
 
 
@@ -109,3 +119,10 @@ def _log_success_rate(well_proposals: list[dict[str, Any]]) -> None:
         len(well_proposals),
         100 * rate,
     )
+
+
+def _log_summaries(well_proposals: list[dict[str, Any]], summary_writer: SummaryWriter) -> None:
+    if isinstance(summary_writer, NoSummaryWriter):
+        return
+    missing = sum(p["dossier"]["summary"] == "" for p in well_proposals)
+    log.info("Summaries: %d written, %d flagged", len(well_proposals) - missing, missing)

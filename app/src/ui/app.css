@@ -15,6 +15,7 @@ main { flex: 1; }
 .status dd { margin: 0; font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .card { background: #fff; border-radius: 0.75rem; padding: 1rem; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
 .card h2 { margin: 0 0 0.75rem; font-size: 1.1rem; }
+.summary { margin: 0 0 1rem; line-height: 1.45; }
 .facts { display: grid; grid-template-columns: auto 1fr; gap: 0.35rem 1rem; margin: 0 0 1rem; }
 .facts dt { color: #57606a; }
 .facts dd { margin: 0; font-weight: 500; }
