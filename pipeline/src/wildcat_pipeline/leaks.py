@@ -22,7 +22,8 @@ before the well.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
+from functools import cache
 from typing import Any
 
 import pandas as pd
@@ -44,6 +45,12 @@ def validate_no_leaks(dataset: dict[str, Any], snapshot: Snapshot) -> None:
     discoveries = _dated_discoveries(snapshot.discoveries, wellbores)
     operators = _names(wellbores["wlbDrillingOperator"]) - {HIDDEN_OPERATOR}
     hint_kinds = " ".join(dataset["hint_prices"])
+    mentioned = _mention_finder(
+        operators
+        | _names(wellbores[["wlbWellboreName", "wlbWell", "wlbDiscovery", "wlbField"]].to_numpy().ravel())
+        | _names(discoveries["dscName"])
+        | _names(discoveries["fldName"])
+    )
 
     breaches: list[str] = []
     for well_proposal in dataset["well_proposals"]:
@@ -52,7 +59,7 @@ def validate_no_leaks(dataset: dict[str, Any], snapshot: Snapshot) -> None:
         outside_reveal = {k: v for k, v in well_proposal.items() if k != "reveal"}
         for path, text in [*_strings(outside_reveal), ("hint_prices", hint_kinds)]:
             where = f"{well_proposal['id']} {path}"
-            breaches += [f"{where}: names {name!r}" for name in sorted(forbidden) if _mentions(text, name)]
+            breaches += [f"{where}: names {name!r}" for name in sorted(mentioned(text) & forbidden)]
             breaches += [f"{where}: exact year {year!r}" for year in _YEAR.findall(text)]
 
     if breaches:
@@ -89,10 +96,29 @@ def _dated_discoveries(discoveries: pd.DataFrame, wellbores: pd.DataFrame) -> pd
     )
 
 
-def _mentions(text: str, name: str) -> bool:
+def _mention_finder(names: set[str]) -> Callable[[str], frozenset[str]]:
+    """A function giving the names, out of `names`, that a text mentions.
+
+    A real snapshot has thousands of names and Dossiers repeat the same short
+    texts, so each distinct text is checked once, and only names it contains
+    as a substring get the slower whole-word check.
+    """
+    folded = [(name, name.casefold()) for name in names]
+
+    @cache
+    def mentioned(text: str) -> frozenset[str]:
+        prose = _GEOLOGICAL_UNIT.sub(" ", text)
+        folded_prose = prose.casefold()
+        return frozenset(
+            name for name, folded_name in folded if folded_name in folded_prose and _mentions(prose, name)
+        )
+
+    return mentioned
+
+
+def _mentions(prose: str, name: str) -> bool:
     # Whole words only, so "2/4-3" is not found inside "12/4-31" and "TOR"
     # not inside "Operator".
-    prose = _GEOLOGICAL_UNIT.sub(" ", text)
     return re.search(rf"(?<![\w/-]){re.escape(name)}(?![\w/-])", prose, re.IGNORECASE) is not None
 
 
