@@ -61,7 +61,7 @@ test("shows each Well Proposal's summary in its Dossier", async () => {
     ...dataset,
     well_proposals: dataset.well_proposals.map((p) => ({
       ...p,
-      dossier: { ...p.dossier, summary: `A structure in block ${p.dossier.block}, drilled in the ${p.dossier.decade}.` },
+      dossier: { ...p.dossier, summary: `A Prospect in block ${p.dossier.block}, drilled in the ${p.dossier.decade}.` },
     })),
   };
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });

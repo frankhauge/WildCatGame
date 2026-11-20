@@ -89,6 +89,11 @@ def validate_no_leaks(dataset: dict[str, Any], guard: LeakGuard) -> None:
             where = f"{well_proposal['id']} {path}"
             breaches += [f"{where}: {breach}" for breach in guard.breaches(text, well_name)]
 
+    raise_breaches(breaches)
+
+
+def raise_breaches(breaches: list[str]) -> None:
+    """Raise LeakError listing `breaches`, if there are any."""
     if breaches:
         raise LeakError("Information boundary breached:\n" + "\n".join(breaches))
 

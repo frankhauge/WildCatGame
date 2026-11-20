@@ -56,7 +56,9 @@ def write_summary(
             error = failure
             continue
         if not isinstance(summary, str):
-            return summary, []  # not a summary at all: the contract check reports it
+            # Not a summary at all: there is no text to guard, and the
+            # contract check fails the build on it.
+            return summary, []
         found = breaches(summary)
         if not found:
             return summary, []

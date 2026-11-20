@@ -365,7 +365,7 @@ class SometimesFailingSummaryWriter:
     def write(self, facts: dict[str, Any]) -> str:
         if facts["decade"] == "1970s":
             raise SummaryWriterError("service unavailable")
-        return f"A structure in block {facts['block']}."
+        return f"A Prospect in block {facts['block']}."
 
 
 def test_summary_review_shows_a_sample_beside_its_reveal_and_every_flagged_well() -> None:
