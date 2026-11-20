@@ -24,8 +24,6 @@ FACTS = {
     "map_position": {"lat": 61.2051, "lon": 2.1953},
     "block": "34/10",
     "water_depth_m": 135.0,
-    "target_formation": "STATFJORD GP",
-    "target_age": "EARLY JURASSIC",
     "decade": "1970s",
     "geologist_view": {"wlbMainArea": "NORTH SEA"},
 }

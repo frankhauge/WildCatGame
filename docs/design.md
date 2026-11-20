@@ -36,7 +36,6 @@ The **free baseline Dossier** contains:
 
 - map position and block
 - water depth
-- target formation or age
 - decade
 - an LLM-written plain-language summary, checked automatically for leaked names and years
 

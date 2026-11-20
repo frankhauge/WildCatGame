@@ -14,8 +14,6 @@ function wellProposal(n: number, outcome: Outcome): WellProposal {
       map_position: { lat: 60, lon: 2 },
       block: `${n}/1`,
       water_depth_m: 100,
-      target_formation: "BRENT GP",
-      target_age: "MIDDLE JURASSIC",
       decade: "1980s",
       geologist_view: {},
     },

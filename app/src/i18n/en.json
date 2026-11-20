@@ -10,8 +10,6 @@
   "dossier.decade": "Drilled in the",
   "dossier.waterDepth": "Water depth",
   "dossier.waterDepthValue": "{metres} m",
-  "dossier.targetFormation": "Target formation",
-  "dossier.targetAge": "Target age",
   "dossier.unknown": "Not recorded",
   "confidence.label": "Your Confidence that this is a Discovery",
   "confidence.value": "{percent}%",

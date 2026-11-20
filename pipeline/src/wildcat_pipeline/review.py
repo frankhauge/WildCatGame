@@ -37,8 +37,7 @@ def summary_review(dataset: dict[str, Any], *, size: int = REVIEW_SIZE) -> str:
             "",
             f"### {reveal['well_name']} ({reveal['outcome']}, {reveal['year']})",
             "",
-            f"Block {dossier['block']}, {dossier['decade']}, target "
-            f"{dossier['target_formation'] or 'not recorded'}",
+            f"Block {dossier['block']}, {dossier['decade']}",
             "",
             f"> {dossier['summary']}",
         ]

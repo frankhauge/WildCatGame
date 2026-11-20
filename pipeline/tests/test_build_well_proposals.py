@@ -61,7 +61,7 @@ def test_outcome_is_discovery_or_dry_and_shows_count_as_dry() -> None:
     }
 
 
-def test_dossier_holds_position_block_water_depth_target_and_decade() -> None:
+def test_dossier_holds_position_block_water_depth_and_decade() -> None:
     dossier = by_name(build())["34/10-1"]["dossier"]
 
     assert dossier == {
@@ -70,18 +70,16 @@ def test_dossier_holds_position_block_water_depth_target_and_decade() -> None:
         "map_position": {"lat": 61.2051, "lon": 2.1953},
         "block": "34/10",
         "water_depth_m": 135.0,
-        "target_formation": "STATFJORD GP",
-        "target_age": "EARLY JURASSIC",
         "decade": "1970s",
         "geologist_view": {
             "wlbMainArea": "NORTH SEA",
             "wlbNsDecDeg": 61.2051,
             "wlbEwDecDeg": 2.1953,
             "wlbWaterDepth": 135.0,
-            "wlbFormationAtTd": "STATFJORD GP",
-            "wlbAgeAtTd": "EARLY JURASSIC",
         },
     }
+    # The formation and age at total depth were only known once the well was
+    # drilled, so they are not pre-spud facts.
 
 
 def test_reveal_holds_name_operator_year_outcome_discovery_and_hydrocarbon_levels() -> None:
@@ -236,10 +234,10 @@ def test_build_fails_when_the_output_breaks_the_contract() -> None:
 
 
 def test_a_formation_sharing_its_name_with_a_later_field_is_not_a_leak() -> None:
-    # 2/4-3 (1971) targets the TOR FM; the TOR field was only found in 1990.
-    dataset = build(MentioningSummaryWriter("decade", "1970s", "The target is the Tor Formation chalk."))
+    # 2/4-3 was spudded in 1971; the TOR field was only found in 1990.
+    dataset = build(MentioningSummaryWriter("decade", "1970s", "Chalk like the Tor Formation."))
 
-    assert by_name(dataset)["2/4-3"]["dossier"]["target_formation"] == "TOR FM"
+    assert by_name(dataset)["2/4-3"]["dossier"]["summary"] == "Chalk like the Tor Formation."
 
 
 def test_a_discovery_is_dated_by_when_its_discovery_well_was_spudded() -> None:
@@ -272,10 +270,7 @@ def test_a_discovery_dated_only_by_year_is_a_leak_before_that_year() -> None:
 
 
 # The Dossier fields a summary writer may see: all known before the spud date.
-PRE_SPUD_FIELDS = {
-    "operator", "map_position", "block", "water_depth_m",
-    "target_formation", "target_age", "decade", "geologist_view",
-}  # fmt: skip
+PRE_SPUD_FIELDS = {"operator", "map_position", "block", "water_depth_m", "decade", "geologist_view"}
 
 
 class RecordingSummaryWriter:
@@ -297,6 +292,7 @@ def test_the_summary_writer_gets_only_pre_spud_fields() -> None:
     for facts, well_proposal in zip(writer.facts, dataset["well_proposals"], strict=True):
         assert set(facts) == PRE_SPUD_FIELDS
         assert facts == {k: v for k, v in well_proposal["dossier"].items() if k != "summary"}
+        assert set(facts["geologist_view"]) == {"wlbMainArea", "wlbNsDecDeg", "wlbEwDecDeg", "wlbWaterDepth"}
     for secret in REVEAL_ONLY:
         assert secret.lower() not in repr(writer.facts).lower()
 
