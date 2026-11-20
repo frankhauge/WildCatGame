@@ -12,7 +12,7 @@ npm install
 npm run dev
 ```
 
-The app loads `public/well_proposals.json`, the pipeline's output. The one checked in is built from a made-up sample snapshot (see [`sample-data/`](sample-data/README.md)).
+The app loads `public/well_proposals.json`, the pipeline's output from a real FactPages download. To refresh it, see [Refresh the dataset](../pipeline/README.md#refresh-the-dataset). A made-up sample snapshot is kept in [`sample-data/`](sample-data/README.md) for development.
 
 ## Build
 

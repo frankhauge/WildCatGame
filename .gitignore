@@ -12,3 +12,6 @@ __pycache__/
 node_modules/
 app/dist/
 *.tsbuildinfo
+
+# FactPages snapshots: downloaded by hand, never committed
+pipeline/snapshots/

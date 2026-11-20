@@ -1,11 +1,9 @@
 # Sample data
 
-A made-up FactPages snapshot for developing and testing the app before the pipeline is run against a real FactPages download. Every well, operator, discovery and field name here is invented.
+A made-up FactPages snapshot for developing the app with a small, predictable dataset. Every well, operator, discovery and field name here is invented.
 
-`../public/well_proposals.json` is built from it by the real pipeline, so it matches the dataset contract and passes the leak checks:
+The app ships `../public/well_proposals.json` built from a real FactPages download (see [Refresh the dataset](../../pipeline/README.md#refresh-the-dataset)). To play the sample instead, build it over that file with the real pipeline, from the repo root, and don't commit the result:
 
 ```bash
-python -m wildcat_pipeline app/sample-data/snapshot app/public/well_proposals.json
+python -m wildcat_pipeline build app/sample-data/snapshot app/public/well_proposals.json
 ```
-
-Replace `app/public/well_proposals.json` with the pipeline's output from a real download to play real wells.

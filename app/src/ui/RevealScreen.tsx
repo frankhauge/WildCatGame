@@ -16,7 +16,7 @@ export function RevealScreen({ state, send }: { state: RevealState; send: (actio
       <p>{t(reveal.decision === "Drill" ? "reveal.youDrilled" : "reveal.youDropped")}</p>
       <dl className="facts">
         <dt>{t("reveal.wellName")}</dt>
-        <dd>{reveal.well_name}</dd>
+        <dd data-testid="reveal-well-name">{reveal.well_name}</dd>
         <dt>{t("reveal.operator")}</dt>
         <dd>{reveal.operator ?? t("dossier.unknown")}</dd>
         <dt>{t("reveal.year")}</dt>

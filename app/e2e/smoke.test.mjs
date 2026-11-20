@@ -11,10 +11,35 @@ import { preview } from "vite";
 const { chromium } = createRequire(import.meta.url)("playwright");
 
 const dataset = JSON.parse(await readFile(new URL("../dist/well_proposals.json", import.meta.url), "utf8"));
-// Everything that must not appear before a decision.
-const revealTexts = dataset.well_proposals.flatMap(({ reveal }) =>
-  [reveal.well_name, reveal.operator, reveal.discovery_name, reveal.field_name, String(reveal.year)].filter(Boolean),
+const byWellName = new Map(dataset.well_proposals.map((p) => [p.reveal.well_name, p]));
+
+// Every well name, operator and year in the dataset: none may appear in any
+// Dossier.
+const neverBeforeADecision = dataset.well_proposals.flatMap(({ reveal }) =>
+  [reveal.well_name, reveal.operator, String(reveal.year)].filter(Boolean),
 );
+
+// A well's own discovery and field: checked once the Reveal says which well
+// it was, ignoring geological units. As in the pipeline's leak validator,
+// "HOD FM" is not a leak of the HOD field: the formation is older than the
+// well. Keep in step with _GEOLOGICAL_UNIT in
+// pipeline/src/wildcat_pipeline/leaks.py.
+function ownDiscoveryAndField({ reveal }) {
+  return [reveal.discovery_name, reveal.field_name].filter(Boolean);
+}
+
+function withoutGeologicalUnits(text) {
+  return text.replace(/[\w-]+\s+(?:fm|formation|gp|group)\b/gi, " ");
+}
+
+// Whole words only, as in the leak validator: the decade "1990s" is allowed,
+// the year 1990 is not, and 2/4-3 is not inside 12/4-31.
+function assertNotShown(secrets, text) {
+  for (const secret of secrets) {
+    const pattern = new RegExp(`(?<![\\w/-])${secret.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}(?![\\w/-])`, "i");
+    assert.ok(!pattern.test(text), `"${secret}" shown before a decision`);
+  }
+}
 
 let server;
 let browser;
@@ -44,11 +69,7 @@ test("plays one full Campaign without showing Reveal data before a decision", as
     await page.getByTestId("dossier").waitFor();
     assert.equal(await page.getByTestId("reveal").count(), 0);
     const text = await page.locator("body").innerText();
-    for (const secret of revealTexts) {
-      // Whole words only: the decade "1990s" is allowed, the year 1990 is not.
-      const pattern = new RegExp(`(^|\\W)${secret.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}(\\W|$)`);
-      assert.ok(!pattern.test(text), `"${secret}" shown before a decision`);
-    }
+    assertNotShown(neverBeforeADecision, text);
     assert.ok(!/chance|probability/i.test(text), "a chance of success is shown");
 
     const drill = page.getByRole("button", { name: /^Drill/ });
@@ -66,6 +87,10 @@ test("plays one full Campaign without showing Reveal data before a decision", as
     decisions++;
 
     await page.getByTestId("reveal").waitFor();
+    const wellName = await page.getByTestId("reveal-well-name").innerText();
+    const shown = byWellName.get(wellName);
+    assert.ok(shown, `the Reveal names ${wellName}, which is not in the dataset`);
+    assertNotShown(ownDiscoveryAndField(shown), withoutGeologicalUnits(text));
     assert.match(await page.getByTestId("budget-change").innerText(), /^[+−]?\d/);
     assert.equal(await page.getByTestId("would-have").count(), drilling ? 0 : 1);
     assert.ok(await credit.isVisible());
