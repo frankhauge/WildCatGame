@@ -33,8 +33,6 @@ export interface Dossier {
   map_position: { lat: number | null; lon: number | null };
   block: string;
   water_depth_m: number | null;
-  target_formation: string | null;
-  target_age: string | null;
   decade: string;
   geologist_view: Record<string, string | number | null>;
 }

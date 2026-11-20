@@ -36,7 +36,6 @@ The **free baseline Dossier** contains:
 
 - map position and block
 - water depth
-- target formation or age
 - decade
 - an LLM-written plain-language summary, checked automatically for leaked names and years
 
@@ -45,7 +44,7 @@ The **free baseline Dossier** contains:
 | Hint | What it tells you |
 |---|---|
 | Licence history | Award round, licence age, earlier wells on the licence |
-| Regional analogues | Hit rate of earlier nearby wells in the same target formation or age. Frontier wells show "no analogues: frontier acreage". |
+| Regional analogues | How many earlier nearby wells found hydrocarbons, grouped by the formations they found them in (Sodir records no planned target to match on). Frontier wells show "no analogues: frontier acreage". |
 | Seismic coverage | Which 2D or 3D surveys covered the area before the spud date |
 | Nearest discovery | Distance to and type of the closest earlier discovery |
 

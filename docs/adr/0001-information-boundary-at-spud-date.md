@@ -5,5 +5,6 @@ Every Well Proposal is a real, already-drilled wildcat well, so its Outcome is p
 ## Consequences
 
 - The pipeline filters by date when it builds each Dossier. Nearby wells, discoveries, fields and seismic surveys count only if they existed before the spud date. Sidetracks are excluded because the main wellbore's result gives theirs away.
+- Fields Sodir records while drilling a well, such as its total depth and the formation and age reached there, are not pre-spud data, even though they say nothing about the Outcome. Sodir records no planned target, so the Dossier shows none.
 - LLM-written summaries get only pre-spud fields as input, and the output is checked automatically for leaked names and years, because the model may know from training what was found.
 - Hint prices are set by how much each kind of Hint improves Outcome prediction across all wildcat wells, but neither those numbers nor any probability of success is ever shown to the Player. Confidence starts at a neutral 50%, and the game never suggests a value.

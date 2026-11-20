@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import re
+from collections import Counter
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -16,8 +18,10 @@ from wildcat_pipeline import (
     ContractError,
     LeakError,
     NoSummaryWriter,
+    SummaryWriterError,
     build_well_proposals,
     load_snapshot,
+    summary_review,
 )
 
 FIXTURE = Path(__file__).parent / "fixtures" / "snapshot"
@@ -57,7 +61,7 @@ def test_outcome_is_discovery_or_dry_and_shows_count_as_dry() -> None:
     }
 
 
-def test_dossier_holds_position_block_water_depth_target_and_decade() -> None:
+def test_dossier_holds_position_block_water_depth_and_decade() -> None:
     dossier = by_name(build())["34/10-1"]["dossier"]
 
     assert dossier == {
@@ -66,18 +70,16 @@ def test_dossier_holds_position_block_water_depth_target_and_decade() -> None:
         "map_position": {"lat": 61.2051, "lon": 2.1953},
         "block": "34/10",
         "water_depth_m": 135.0,
-        "target_formation": "STATFJORD GP",
-        "target_age": "EARLY JURASSIC",
         "decade": "1970s",
         "geologist_view": {
             "wlbMainArea": "NORTH SEA",
             "wlbNsDecDeg": 61.2051,
             "wlbEwDecDeg": 2.1953,
             "wlbWaterDepth": 135.0,
-            "wlbFormationAtTd": "STATFJORD GP",
-            "wlbAgeAtTd": "EARLY JURASSIC",
         },
     }
+    # The formation and age at total depth were only known once the well was
+    # drilled, so they are not pre-spud facts.
 
 
 def test_reveal_holds_name_operator_year_outcome_discovery_and_hydrocarbon_levels() -> None:
@@ -232,10 +234,10 @@ def test_build_fails_when_the_output_breaks_the_contract() -> None:
 
 
 def test_a_formation_sharing_its_name_with_a_later_field_is_not_a_leak() -> None:
-    # 2/4-3 (1971) targets the TOR FM; the TOR field was only found in 1990.
-    dataset = build(MentioningSummaryWriter("decade", "1970s", "The target is the Tor Formation chalk."))
+    # 2/4-3 was spudded in 1971; the TOR field was only found in 1990.
+    dataset = build(MentioningSummaryWriter("decade", "1970s", "Chalk like the Tor Formation."))
 
-    assert by_name(dataset)["2/4-3"]["dossier"]["target_formation"] == "TOR FM"
+    assert by_name(dataset)["2/4-3"]["dossier"]["summary"] == "Chalk like the Tor Formation."
 
 
 def test_a_discovery_is_dated_by_when_its_discovery_well_was_spudded() -> None:
@@ -265,3 +267,123 @@ def test_a_discovery_dated_only_by_year_is_a_leak_before_that_year() -> None:
     # HAVBRIS was found in 1985, after 15/9-19 was spudded in 1981.
     with pytest.raises(LeakError):
         build(MentioningSummaryWriter("block", "15/9", "Like HAVBRIS."))
+
+
+# The Dossier fields a summary writer may see: all known before the spud date.
+PRE_SPUD_FIELDS = {"operator", "map_position", "block", "water_depth_m", "decade", "geologist_view"}
+
+
+class RecordingSummaryWriter:
+    """Fake summary writer that records the facts it is given."""
+
+    def __init__(self) -> None:
+        self.facts: list[dict[str, Any]] = []
+
+    def write(self, facts: dict[str, Any]) -> str:
+        self.facts.append(copy.deepcopy(facts))
+        return "A tilted fault block."
+
+
+def test_the_summary_writer_gets_only_pre_spud_fields() -> None:
+    writer = RecordingSummaryWriter()
+    dataset = build(writer)
+
+    assert len(writer.facts) == len(dataset["well_proposals"])
+    for facts, well_proposal in zip(writer.facts, dataset["well_proposals"], strict=True):
+        assert set(facts) == PRE_SPUD_FIELDS
+        assert facts == {k: v for k, v in well_proposal["dossier"].items() if k != "summary"}
+        assert set(facts["geologist_view"]) == {"wlbMainArea", "wlbNsDecDeg", "wlbEwDecDeg", "wlbWaterDepth"}
+    for secret in REVEAL_ONLY:
+        assert secret.lower() not in repr(writer.facts).lower()
+
+
+class LeaksFirstSummaryWriter:
+    """Fake summary writer that leaks the operator `leaks` times per well, then writes a clean summary."""
+
+    def __init__(self, leaks: int) -> None:
+        self.leaks = leaks
+        self.calls: Counter[str] = Counter()
+
+    def write(self, facts: dict[str, Any]) -> str:
+        self.calls[facts["block"]] += 1
+        return "Drilled by Nordhav Petroleum AS." if self.calls[facts["block"]] <= self.leaks else "A tilted fault block."
+
+
+def test_a_leaking_summary_is_retried_until_it_passes_the_leak_guard() -> None:
+    writer = LeaksFirstSummaryWriter(leaks=2)
+    dataset = build(writer)
+
+    assert {p["dossier"]["summary"] for p in dataset["well_proposals"]} == {"A tilted fault block."}
+    assert set(writer.calls.values()) == {3}
+
+
+def test_build_fails_when_a_summary_still_leaks_after_every_retry() -> None:
+    writer = LeaksFirstSummaryWriter(leaks=3)
+
+    with pytest.raises(LeakError, match=r"(?s)summary still leaks after 3 attempts.*'Nordhav Petroleum AS'"):
+        build(writer)
+    assert set(writer.calls.values()) == {3}
+
+
+class FailingSummaryWriter:
+    """Fake summary writer that fails `failures` times per well, then writes a summary."""
+
+    def __init__(self, failures: int) -> None:
+        self.failures = failures
+        self.calls: Counter[str] = Counter()
+
+    def write(self, facts: dict[str, Any]) -> str:
+        self.calls[facts["block"]] += 1
+        if self.calls[facts["block"]] <= self.failures:
+            raise SummaryWriterError("service unavailable")
+        return "A tilted fault block."
+
+
+def test_a_failed_summary_is_retried() -> None:
+    dataset = build(FailingSummaryWriter(failures=2))
+
+    assert {p["dossier"]["summary"] for p in dataset["well_proposals"]} == {"A tilted fault block."}
+
+
+def test_a_summary_that_cannot_be_written_is_flagged_and_left_empty(caplog: pytest.LogCaptureFixture) -> None:
+    with caplog.at_level("WARNING", logger="wildcat_pipeline"):
+        dataset = build(FailingSummaryWriter(failures=3))
+
+    assert {p["dossier"]["summary"] for p in dataset["well_proposals"]} == {""}
+    flagged = [r.getMessage() for r in caplog.records if "Flagged" in r.getMessage()]
+    assert len(flagged) == 6
+    assert all("service unavailable" in message for message in flagged)
+
+
+class SometimesFailingSummaryWriter:
+    """Fake summary writer that always fails for 1970s wells."""
+
+    def write(self, facts: dict[str, Any]) -> str:
+        if facts["decade"] == "1970s":
+            raise SummaryWriterError("service unavailable")
+        return f"A Prospect in block {facts['block']}."
+
+
+def test_summary_review_shows_a_sample_beside_its_reveal_and_every_flagged_well() -> None:
+    dataset = build(SometimesFailingSummaryWriter())
+
+    review = summary_review(dataset, size=2)
+
+    assert review == summary_review(dataset, size=2)  # the same sample every time
+    sample, flagged = review.split("## Flagged")
+    assert "2 of 4 summaries" in sample
+    sampled = re.findall(r"^### (\S+) ", sample, re.MULTILINE)
+    assert len(sampled) == 2
+    for name in sampled:
+        well_proposal = by_name(dataset)[name]
+        assert f"> {well_proposal['dossier']['summary']}" in sample
+        assert well_proposal["reveal"]["outcome"] in sample
+    assert set(re.findall(r"^- (\S+) ", flagged, re.MULTILINE)) == {"34/10-1", "2/4-3"}
+
+
+def test_summary_review_samples_every_summary_when_there_are_few() -> None:
+    dataset = build(SometimesFailingSummaryWriter())
+
+    review = summary_review(dataset, size=20)
+
+    assert "4 of 4 summaries" in review

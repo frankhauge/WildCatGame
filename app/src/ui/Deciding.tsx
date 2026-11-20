@@ -12,7 +12,11 @@ export function Deciding({ state, send }: { state: DecidingState; send: (action:
   return (
     <section className="card" data-testid="dossier">
       <h2>{t("dossier.heading")}</h2>
-      {dossier.summary && <p>{dossier.summary}</p>}
+      {dossier.summary && (
+        <p className="summary" data-testid="dossier-summary">
+          {dossier.summary}
+        </p>
+      )}
       <dl className="facts">
         <dt>{t("dossier.block")}</dt>
         <dd>{dossier.block}</dd>
@@ -22,10 +26,6 @@ export function Deciding({ state, send }: { state: DecidingState; send: (action:
         <dd>{dossier.decade}</dd>
         <dt>{t("dossier.waterDepth")}</dt>
         <dd>{dossier.water_depth_m == null ? unknown : t("dossier.waterDepthValue", { metres: amount(dossier.water_depth_m) })}</dd>
-        <dt>{t("dossier.targetFormation")}</dt>
-        <dd>{dossier.target_formation ?? unknown}</dd>
-        <dt>{t("dossier.targetAge")}</dt>
-        <dd>{dossier.target_age ?? unknown}</dd>
       </dl>
 
       <label className="confidence">

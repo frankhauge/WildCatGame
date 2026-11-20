@@ -18,4 +18,4 @@
 
 - ISBJELLET was found in 1981 by 7120/12-1, spudded in June 1981. It is earlier knowledge for 15/9-19, spudded in November 1981.
 - HAVBRIS was found in 1985 by a wellbore that is not in the snapshot, so only its year dates it. A discovery in the same year as the spud date counts as earlier knowledge for 25/7-1 (1985).
-- TOR, found in 1990, shares its name with the Tor Formation that 2/4-3 targets. Naming a formation is not a leak.
+- TOR, found in 1990, shares its name with the Tor Formation, where 2/4-3 reached total depth. Naming a formation is not a leak.

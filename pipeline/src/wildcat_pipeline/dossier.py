@@ -12,21 +12,22 @@ from typing import Any
 import pandas as pd
 
 from .cells import number, text
-from .summary import SummaryWriter
 
 HIDDEN_OPERATOR = "Operator A"
 
 # Raw Sodir fields shown in the Geologist View. Every one must be known
-# before the spud date.
-_GEOLOGIST_VIEW_TEXT = ["wlbMainArea", "wlbFormationAtTd", "wlbAgeAtTd"]
+# before the spud date. Fields recorded while drilling, such as the total depth
+# and the formation and age reached there, are not.
+_GEOLOGIST_VIEW_TEXT = ["wlbMainArea"]
 _GEOLOGIST_VIEW_NUMBERS = ["wlbNsDecDeg", "wlbEwDecDeg", "wlbWaterDepth"]
 
 
-def build_dossier(
-    wellbore: pd.Series, spud_date: pd.Timestamp, summary_writer: SummaryWriter
-) -> dict[str, Any]:
-    """Build the Dossier for one eligible wellbore."""
-    facts: dict[str, Any] = {
+def dossier_facts(wellbore: pd.Series, spud_date: pd.Timestamp) -> dict[str, Any]:
+    """The Dossier of one eligible wellbore, all but its summary.
+
+    These are the only facts the summary writer is given.
+    """
+    return {
         "operator": HIDDEN_OPERATOR,
         "map_position": {
             "lat": number(wellbore["wlbNsDecDeg"]),
@@ -34,17 +35,12 @@ def build_dossier(
         },
         "block": _block_of(str(wellbore["wlbWell"])),
         "water_depth_m": number(wellbore["wlbWaterDepth"]),
-        # Sodir records no planned target, so the target is the formation and
-        # age at total depth, as FactPages gives them.
-        "target_formation": text(wellbore["wlbFormationAtTd"]),
-        "target_age": text(wellbore["wlbAgeAtTd"]),
         "decade": f"{spud_date.year // 10 * 10}s",
         "geologist_view": {
             **{field: text(wellbore[field]) for field in _GEOLOGIST_VIEW_TEXT},
             **{field: number(wellbore[field]) for field in _GEOLOGIST_VIEW_NUMBERS},
         },
     }
-    return {"summary": summary_writer.write(facts), **facts}
 
 
 def _block_of(well_name: str) -> str:

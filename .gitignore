@@ -15,3 +15,6 @@ app/dist/
 
 # FactPages snapshots: downloaded by hand, never committed
 pipeline/snapshots/
+
+# Summary reviews: written on each build for a person to read, never committed
+pipeline/reviews/

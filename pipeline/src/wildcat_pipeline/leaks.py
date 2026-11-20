@@ -34,41 +34,72 @@ from .snapshot import Snapshot, spud_dates
 _YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
 # app/e2e/smoke.test.mjs repeats this rule; keep the two in step.
 _GEOLOGICAL_UNIT = re.compile(r"\b[\w-]+\s+(?:fm|formation|gp|group)\b", re.IGNORECASE)
+_WELL_NAME_COLUMNS = ["wlbWellboreName", "wlbWell", "wlbDiscovery", "wlbField"]
 
 
 class LeakError(Exception):
     """The Well Proposals dataset breaks the information boundary."""
 
 
-def validate_no_leaks(dataset: dict[str, Any], snapshot: Snapshot) -> None:
-    """Raise LeakError listing every breach found outside the Reveals."""
-    wellbores = snapshot.wellbores.assign(spud=spud_dates(snapshot.wellbores))
-    discoveries = _dated_discoveries(snapshot.discoveries, wellbores)
-    operators = _names(wellbores["wlbDrillingOperator"]) - {HIDDEN_OPERATOR}
-    hint_kinds = " ".join(dataset["hint_prices"])
-    mentioned = _mention_finder(
-        operators
-        | _names(wellbores[["wlbWellboreName", "wlbWell", "wlbDiscovery", "wlbField"]].to_numpy().ravel())
-        | _names(discoveries["dscName"])
-        | _names(discoveries["fldName"])
-    )
+class LeakGuard:
+    """Finds the breaches in a text shown before a given well's Reveal.
 
+    Built once per snapshot, then used for every text: the summaries as they
+    are written, and the whole dataset at the end.
+    """
+
+    def __init__(self, snapshot: Snapshot) -> None:
+        self._wellbores = snapshot.wellbores.assign(spud=spud_dates(snapshot.wellbores))
+        self._discoveries = _dated_discoveries(snapshot.discoveries, self._wellbores)
+        self._operators = _names(self._wellbores["wlbDrillingOperator"]) - {HIDDEN_OPERATOR}
+        self._mentioned = _mention_finder(
+            self._operators
+            | _names(self._wellbores[_WELL_NAME_COLUMNS].to_numpy().ravel())
+            | _names(self._discoveries["dscName"])
+            | _names(self._discoveries["fldName"])
+        )
+        self._forbidden: dict[str, set[str]] = {}
+
+    def breaches(self, text: str, well_name: str) -> list[str]:
+        """Every breach in `text`, if shown before the Reveal of the well named `well_name`."""
+        forbidden = self._forbidden_for(well_name)
+        return [f"names {name!r}" for name in sorted(self._mentioned(text) & forbidden)] + [
+            f"exact year {year!r}" for year in _YEAR.findall(text)
+        ]
+
+    def _forbidden_for(self, well_name: str) -> set[str]:
+        if well_name not in self._forbidden:
+            well = self._wellbores[self._wellbores["wlbWellboreName"] == well_name].iloc[0]
+            self._forbidden[well_name] = (
+                self._operators
+                | _own_names(well)
+                | _names_dated_from(well["spud"], self._wellbores, self._discoveries)
+            )
+        return self._forbidden[well_name]
+
+
+def validate_no_leaks(dataset: dict[str, Any], guard: LeakGuard) -> None:
+    """Raise LeakError listing every breach found outside the Reveals."""
+    hint_kinds = " ".join(dataset["hint_prices"])
     breaches: list[str] = []
     for well_proposal in dataset["well_proposals"]:
-        well = wellbores[wellbores["wlbWellboreName"] == well_proposal["reveal"]["well_name"]].iloc[0]
-        forbidden = operators | _own_names(well) | _names_dated_from(well["spud"], wellbores, discoveries)
+        well_name = well_proposal["reveal"]["well_name"]
         outside_reveal = {k: v for k, v in well_proposal.items() if k != "reveal"}
         for path, text in [*_strings(outside_reveal), ("hint_prices", hint_kinds)]:
             where = f"{well_proposal['id']} {path}"
-            breaches += [f"{where}: names {name!r}" for name in sorted(mentioned(text) & forbidden)]
-            breaches += [f"{where}: exact year {year!r}" for year in _YEAR.findall(text)]
+            breaches += [f"{where}: {breach}" for breach in guard.breaches(text, well_name)]
 
+    raise_breaches(breaches)
+
+
+def raise_breaches(breaches: list[str]) -> None:
+    """Raise LeakError listing `breaches`, if there are any."""
     if breaches:
         raise LeakError("Information boundary breached:\n" + "\n".join(breaches))
 
 
 def _own_names(well: pd.Series) -> set[str]:
-    return _names(well[["wlbWellboreName", "wlbWell", "wlbDiscovery", "wlbField"]])
+    return _names(well[_WELL_NAME_COLUMNS])
 
 
 def _names_dated_from(
